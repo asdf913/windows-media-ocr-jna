@@ -58,5 +58,12 @@
 			<version>32.0.1-jre</version>
 			<scope>test</scope>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.junit.platform/junit-platform-runner -->
+		<dependency>
+			<groupId>org.junit.platform</groupId>
+			<artifactId>junit-platform-runner</artifactId>
+			<version>1.9.3</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 </project>
