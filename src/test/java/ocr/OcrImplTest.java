@@ -11,11 +11,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Base64.Encoder;
 import java.util.List;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 import javax.imageio.ImageIO;
 
+import org.apache.commons.lang3.function.FailableFunction;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,8 +39,8 @@ public class OcrImplTest {
 		//
 		(METHOD_TO_STRING = clz.getDeclaredMethod("toString", Object.class)).setAccessible(true);
 		//
-		(METHOD_TEST_AND_APPLY = clz.getDeclaredMethod("testAndApply", Predicate.class, Object.class, Function.class,
-				Function.class)).setAccessible(true);
+		(METHOD_TEST_AND_APPLY = clz.getDeclaredMethod("testAndApply", Predicate.class, Object.class,
+				FailableFunction.class, FailableFunction.class)).setAccessible(true);
 		//
 	}
 
@@ -172,8 +172,9 @@ public class OcrImplTest {
 		//
 	}
 
-	private static <T, R> R testAndApply(final Predicate<T> predicate, final T value, final Function<T, R> functionTrue,
-			final Function<T, R> functionFalse) throws Throwable {
+	private static <T, R, E extends Throwable> R testAndApply(final Predicate<T> predicate, final T value,
+			final FailableFunction<T, R, E> functionTrue, final FailableFunction<T, R, E> functionFalse)
+			throws Throwable {
 		try {
 			return (R) METHOD_TEST_AND_APPLY.invoke(null, predicate, value, functionTrue, functionFalse);
 		} catch (final InvocationTargetException e) {

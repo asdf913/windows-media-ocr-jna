@@ -1,12 +1,13 @@
 package ocr;
 
 import java.util.Base64;
-import java.util.Collections;
 import java.util.Base64.Encoder;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
 import java.util.function.Predicate;
+
+import org.apache.commons.lang3.function.FailableFunction;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -50,7 +51,8 @@ public class OcrImpl implements Ocr {
 		//
 		try {
 			//
-			final List<?> list = cast(List.class, new ObjectMapper().readValue(string, Object.class));
+			final List<?> list = cast(List.class,
+					testAndApply(Objects::nonNull, string, x -> new ObjectMapper().readValue(x, Object.class), null));
 			//
 			return list != null ? list.stream().map(x -> toString(x)).toList() : null;
 			//
@@ -86,12 +88,13 @@ public class OcrImpl implements Ocr {
 		return instance != null ? instance.encodeToString(src) : null;
 	}
 
-	private static <T, R> R testAndApply(final Predicate<T> predicate, final T value, final Function<T, R> functionTrue,
-			final Function<T, R> functionFalse) {
+	private static <T, R, E extends Throwable> R testAndApply(final Predicate<T> predicate, final T value,
+			final FailableFunction<T, R, E> functionTrue, final FailableFunction<T, R, E> functionFalse) throws E {
 		return predicate != null && predicate.test(value) ? apply(functionTrue, value) : apply(functionFalse, value);
 	}
 
-	private static <R, T> R apply(Function<T, R> instance, final T value) {
+	private static <T, R, E extends Throwable> R apply(final FailableFunction<T, R, E> instance, final T value)
+			throws E {
 		return instance != null ? instance.apply(value) : null;
 	}
 
