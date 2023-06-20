@@ -1,7 +1,5 @@
 package ocr;
 
-import java.util.Base64;
-import java.util.Base64.Encoder;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -12,7 +10,10 @@ import org.apache.commons.lang3.function.FailableFunction;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.jna.Library;
+import com.sun.jna.Memory;
 import com.sun.jna.Native;
+import com.sun.jna.Pointer;
+import com.sun.jna.ptr.IntByReference;
 
 public class OcrImpl implements Ocr {
 
@@ -22,7 +23,8 @@ public class OcrImpl implements Ocr {
 
 		public String getAvailableRecognizerLanguageTags();
 
-		public String getOcrText(final String languageTag, final String base64EncodedString);
+		public Pointer getOcrText(final String languageTag, final Pointer pointer, final int length,
+				final IntByReference intByReference);
 
 	}
 
@@ -75,17 +77,27 @@ public class OcrImpl implements Ocr {
 	@Override
 	public String getOcrText(final String languageTag, final byte[] bs) {
 		//
-		return getOcrText(Jna.INSTANCE, languageTag,
-				testAndApply(Objects::nonNull, bs, x -> encodeToString(Base64.getEncoder(), x), null));
+		final int length = bs != null ? bs.length : 0;
+		//
+		final Memory memory = new Memory(length);
+		//
+		memory.write(0, bs, 0, length);
+		///
+		final IntByReference intByReference = new IntByReference();
+		//
+		final Pointer pointer = getOcrText(Jna.INSTANCE, languageTag, memory, length, intByReference);
+		//
+		return getString(pointer, 0, "UTF-8");
 		//
 	}
 
-	private static String getOcrText(final Jna instance, final String languageTag, final String base64EncodedString) {
-		return instance != null ? instance.getOcrText(languageTag, base64EncodedString) : null;
+	private static String getString(final Pointer instance, final long offset, final String encoding) {
+		return instance != null ? instance.getString(offset, encoding) : null;
 	}
 
-	private static String encodeToString(final Encoder instance, final byte[] src) {
-		return instance != null ? instance.encodeToString(src) : null;
+	private static Pointer getOcrText(final Jna instance, final String languageTag, final Pointer pointer,
+			final int length, final IntByReference intByReference) {
+		return instance != null ? instance.getOcrText(languageTag, pointer, length, intByReference) : null;
 	}
 
 	private static <T, R, E extends Throwable> R testAndApply(final Predicate<T> predicate, final T value,

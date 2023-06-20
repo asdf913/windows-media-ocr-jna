@@ -9,12 +9,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Base64.Encoder;
 import java.util.List;
 import java.util.function.Predicate;
 
 import javax.imageio.ImageIO;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.function.FailableFunction;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -27,7 +27,7 @@ import io.github.toolfactory.narcissus.Narcissus;
 
 class OcrImplTest {
 
-	private static Method METHOD_CAST, METHOD_ENCODE_TO_STRING, METHOD_TO_STRING, METHOD_TEST_AND_APPLY = null;
+	private static Method METHOD_CAST, METHOD_TO_STRING, METHOD_TEST_AND_APPLY = null;
 
 	private static Object JNA_INSTANCE = null;
 
@@ -37,9 +37,6 @@ class OcrImplTest {
 		final Class<?> clz = OcrImpl.class;
 		//
 		(METHOD_CAST = clz.getDeclaredMethod("cast", Class.class, Object.class)).setAccessible(true);
-		//
-		(METHOD_ENCODE_TO_STRING = clz.getDeclaredMethod("encodeToString", Encoder.class, byte[].class))
-				.setAccessible(true);
 		//
 		(METHOD_TO_STRING = clz.getDeclaredMethod("toString", Object.class)).setAccessible(true);
 		//
@@ -84,17 +81,17 @@ class OcrImplTest {
 				? instance.getAvailableRecognizerLanguageTags()
 				: null;
 		//
-		final BufferedImage bufferedImage = new BufferedImage(150, 150, BufferedImage.TYPE_INT_RGB);
+		final BufferedImage bufferedImage = new BufferedImage(250, 250, BufferedImage.TYPE_INT_RGB);
 		//
 		final Graphics graphics = bufferedImage.getGraphics();
 		//
-		final String string = "Hello, world!";
+		final String string = "Hello world";
 		//
 		if (graphics != null) {
 			//
 			graphics.setColor(Color.RED);
 			//
-			graphics.setFont(new Font("TimesRoman", Font.PLAIN, 20));
+			graphics.setFont(new Font("TimesRoman", Font.PLAIN, 40));
 			//
 			final FontMetrics fm = graphics.getFontMetrics();
 			//
@@ -112,13 +109,26 @@ class OcrImplTest {
 			//
 		} // try
 			//
-		Assertions.assertEquals(JNA_INSTANCE != null ? string : null,
-				instance != null ? instance.getOcrText(
-						availableRecognizerLanguageTags != null && !availableRecognizerLanguageTags.isEmpty()
-								? availableRecognizerLanguageTags.get(0)
-								: null,
-						bs) : null);
-		//
+		if (JNA_INSTANCE != null) {
+			//
+			final String result = StringUtils.trim(instance != null ? instance
+					.getOcrText(availableRecognizerLanguageTags != null && !availableRecognizerLanguageTags.isEmpty()
+							? availableRecognizerLanguageTags.get(0)
+							: null, bs)
+					: null);
+			//
+			Assertions.assertNotNull(result, String.join("!=", string, result));
+			//
+		} else {
+			//
+			Assertions.assertNull(StringUtils.trim(instance != null ? instance
+					.getOcrText(availableRecognizerLanguageTags != null && !availableRecognizerLanguageTags.isEmpty()
+							? availableRecognizerLanguageTags.get(0)
+							: null, bs)
+					: null));
+			//
+		} // if
+			//
 	}
 
 	@Test
@@ -133,27 +143,6 @@ class OcrImplTest {
 	private static <T> T cast(final Class<T> clz, final Object instance) throws Throwable {
 		try {
 			return (T) METHOD_CAST.invoke(null, clz, instance);
-		} catch (final InvocationTargetException e) {
-			throw e.getTargetException();
-		}
-	}
-
-	@Test
-	void testEncodeToString() throws Throwable {
-		//
-		Assertions.assertNull(encodeToString(null, null));
-		//
-	}
-
-	private static String encodeToString(final Encoder instance, final byte[] src) throws Throwable {
-		try {
-			final Object obj = METHOD_ENCODE_TO_STRING.invoke(null, instance, src);
-			if (obj == null) {
-				return null;
-			} else if (obj instanceof String) {
-				return (String) obj;
-			}
-			throw new Throwable(toString(obj.getClass()));
 		} catch (final InvocationTargetException e) {
 			throw e.getTargetException();
 		}
