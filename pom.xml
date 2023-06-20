@@ -87,9 +87,9 @@
 	</build>
 	<distributionManagement>
 		<repository>
-			<id>github</id>
-			<name>GitHub Packages</name>
-			<url>https://maven.pkg.github.com/asdf913/windows-media-ocr-jna</url>
+			<id>repsy</id>
+			<name>My Private Maven Repository on Repsy</name>
+			<url>https://repo.repsy.io/mvn/asdf913/default</url>
 		</repository>
 	</distributionManagement>
 </project>
