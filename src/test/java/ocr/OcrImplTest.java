@@ -16,7 +16,6 @@ import java.util.function.Predicate;
 import javax.imageio.ImageIO;
 
 import org.apache.commons.lang3.function.FailableFunction;
-import org.apache.commons.lang3.reflect.FieldUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,7 +25,7 @@ import com.google.common.base.Predicates;
 
 import io.github.toolfactory.narcissus.Narcissus;
 
-public class OcrImplTest {
+class OcrImplTest {
 
 	private static Method METHOD_CAST, METHOD_ENCODE_TO_STRING, METHOD_TO_STRING, METHOD_TEST_AND_APPLY = null;
 
