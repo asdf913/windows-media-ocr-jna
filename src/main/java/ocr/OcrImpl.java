@@ -17,12 +17,26 @@ public class OcrImpl implements Ocr {
 
 	private interface Jna extends Library {
 
-		Jna INSTANCE = cast(Jna.class, Native.load("WindowsMediaOcrLibary.dll", Jna.class));
+		Jna INSTANCE = createJna();
 
 		public String getAvailableRecognizerLanguageTags();
 
 		public String getOcrText(final String languageTag, final String base64EncodedString);
 
+	}
+
+	private static Jna createJna() {
+		//
+		try {
+			//
+			return cast(Jna.class, Native.load("WindowsMediaOcrLibary.dll", Jna.class));
+			//
+		} catch (final Throwable e) {
+			//
+			return null;
+			//
+		} // try
+			//
 	}
 
 	private static <T> T cast(final Class<T> clz, final Object value) {
