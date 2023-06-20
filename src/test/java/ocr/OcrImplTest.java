@@ -16,6 +16,7 @@ import java.util.function.Predicate;
 import javax.imageio.ImageIO;
 
 import org.apache.commons.lang3.function.FailableFunction;
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,9 +24,13 @@ import org.junit.jupiter.api.Test;
 
 import com.google.common.base.Predicates;
 
+import io.github.toolfactory.narcissus.Narcissus;
+
 public class OcrImplTest {
 
 	private static Method METHOD_CAST, METHOD_ENCODE_TO_STRING, METHOD_TO_STRING, METHOD_TEST_AND_APPLY = null;
+
+	private static Object JNA_INSTANCE = null;
 
 	@BeforeAll
 	static void beforeAll() throws ReflectiveOperationException {
@@ -42,6 +47,8 @@ public class OcrImplTest {
 		(METHOD_TEST_AND_APPLY = clz.getDeclaredMethod("testAndApply", Predicate.class, Object.class,
 				FailableFunction.class, FailableFunction.class)).setAccessible(true);
 		//
+		JNA_INSTANCE = Narcissus.getStaticObjectField(Class.forName("ocr.OcrImpl$Jna").getDeclaredField("INSTANCE"));
+		//
 	}
 
 	private OcrImpl instance = null;
@@ -56,8 +63,19 @@ public class OcrImplTest {
 	@Test
 	void testGetAvailableRecognizerLanguageTags() {
 		//
-		Assertions.assertNotNull(instance != null ? instance.getAvailableRecognizerLanguageTags() : null);
+		final Object availableRecognizerLanguageTags = instance != null ? instance.getAvailableRecognizerLanguageTags()
+				: null;
 		//
+		if (JNA_INSTANCE != null) {
+			//
+			Assertions.assertNotNull(availableRecognizerLanguageTags);
+			//
+		} else {
+			//
+			Assertions.assertNull(availableRecognizerLanguageTags);
+			//
+		} // if
+			//
 	}
 
 	@Test
@@ -95,7 +113,7 @@ public class OcrImplTest {
 			//
 		} // try
 			//
-		Assertions.assertEquals(string,
+		Assertions.assertEquals(JNA_INSTANCE != null ? string : null,
 				instance != null ? instance.getOcrText(
 						availableRecognizerLanguageTags != null && !availableRecognizerLanguageTags.isEmpty()
 								? availableRecognizerLanguageTags.get(0)
