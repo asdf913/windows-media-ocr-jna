@@ -92,6 +92,8 @@ class OcrImplTest {
 
 	private static class IH implements InvocationHandler {
 
+		private Pointer pointer = null;
+
 		@Override
 		public Object invoke(final Object proxy, @Nullable final Method method, @Nullable final Object[] args)
 				throws Throwable {
@@ -102,7 +104,7 @@ class OcrImplTest {
 				//
 				if (Objects.equals(methodName, "getAvailableRecognizerLanguageTags")) {
 					//
-					return null;
+					return pointer;
 					//
 				} // if
 					//
@@ -129,7 +131,11 @@ class OcrImplTest {
 		final Object availableRecognizerLanguageTags = instance != null ? instance.getAvailableRecognizerLanguageTags()
 				: null;
 		//
-		Assertions.assertNull(getAvailableRecognizerLanguageTags(Reflection.newProxy(CLASS_JNA, new IH())));
+		final IH ih = new IH();
+		//
+		final Object jna = Reflection.newProxy(CLASS_JNA, ih);
+		//
+		Assertions.assertNull(getAvailableRecognizerLanguageTags(jna));
 		//
 		if (JNA_INSTANCE != null) {
 			//
@@ -140,6 +146,10 @@ class OcrImplTest {
 		} else {
 			//
 			Assertions.assertNull(availableRecognizerLanguageTags);
+			//
+			ih.pointer = new Pointer(0);
+			//
+			Assertions.assertNull(getAvailableRecognizerLanguageTags(jna));
 			//
 		} // if
 			//
