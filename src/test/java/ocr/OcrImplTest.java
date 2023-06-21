@@ -35,7 +35,7 @@ import javassist.util.proxy.ProxyObject;
 
 class OcrImplTest {
 
-	private static Method METHOD_CAST, METHOD_TO_STRING, METHOD_TEST_AND_APPLY, METHOD_GET_STRING,
+	private static Method METHOD_CAST, METHOD_TEST_AND_APPLY, METHOD_GET_STRING,
 			METHOD_GET_AVAILABLE_RECOGNIZER_LANGUAGE_TAGS = null;
 
 	private static Object JNA_INSTANCE = null;
@@ -48,8 +48,6 @@ class OcrImplTest {
 		final Class<?> clz = OcrImpl.class;
 		//
 		(METHOD_CAST = clz.getDeclaredMethod("cast", Class.class, Object.class)).setAccessible(true);
-		//
-		(METHOD_TO_STRING = clz.getDeclaredMethod("toString", Object.class)).setAccessible(true);
 		//
 		(METHOD_TEST_AND_APPLY = clz.getDeclaredMethod("testAndApply", Predicate.class, Object.class,
 				FailableFunction.class, FailableFunction.class)).setAccessible(true);
@@ -276,33 +274,8 @@ class OcrImplTest {
 		}
 	}
 
-	@Test
-	void testToString() throws Throwable {
-		//
-		Assertions.assertNull(toString(null));
-		//
-		if (JNA_INSTANCE == null) {
-			//
-			final String string = "";
-			//
-			Assertions.assertSame(string, toString(string));
-			//
-		} // if
-			//
-	}
-
-	private static String toString(final Object instance) throws Throwable {
-		try {
-			final Object obj = METHOD_TO_STRING.invoke(null, instance);
-			if (obj == null) {
-				return null;
-			} else if (obj instanceof String) {
-				return (String) obj;
-			}
-			throw new Throwable(toString(obj.getClass()));
-		} catch (final InvocationTargetException e) {
-			throw e.getTargetException();
-		}
+	private static String toString(final Object instance) {
+		return instance != null ? instance.toString() : null;
 	}
 
 	@Test

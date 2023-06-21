@@ -1,16 +1,12 @@
 package ocr;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
 
 import org.apache.commons.lang3.function.FailableFunction;
-import org.apache.commons.text.StringEscapeUtils;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.jna.Library;
 import com.sun.jna.Memory;
 import com.sun.jna.Native;
@@ -28,8 +24,8 @@ public class OcrImpl implements Ocr {
 		public Pointer getOcrText(final String languageTag, final Pointer pointer, final int length,
 				final IntByReference intByReference);
 
-		public String getOcrLinesAsJson(final String languageTag, final Pointer pointer, final int length,
-				final IntByReference intByReference);
+		public Pointer getOcrLines(final String languageTag, final Pointer pointer, final int length,
+				final IntByReference lengtOut);
 
 	}
 
@@ -56,10 +52,6 @@ public class OcrImpl implements Ocr {
 		//
 		return getAvailableRecognizerLanguageTags(Jna.INSTANCE);
 		//
-	}
-
-	private static String toString(final Object instance) {
-		return instance != null ? instance.toString() : null;
 	}
 
 	private static List<String> getAvailableRecognizerLanguageTags(final Jna instance) {
@@ -127,8 +119,6 @@ public class OcrImpl implements Ocr {
 		//
 		final int length = bs != null ? bs.length : 0;
 		//
-		String string = null;
-		//
 		try (final Memory memory = testAndApply(x -> x > 0, length, x -> new Memory(x), null)) {
 			//
 			if (memory != null) {
@@ -137,25 +127,33 @@ public class OcrImpl implements Ocr {
 				//
 			} // if
 				//
-			final IntByReference intByReference = new IntByReference();
+			final IntByReference lengthOut = new IntByReference();
 			//
 			final Jna instance = Jna.INSTANCE;
 			//
-			string = instance != null && memory != null
-					? instance.getOcrLinesAsJson(languageTag, memory, length, intByReference)
+			final Pointer pointer = instance != null && memory != null
+					? instance.getOcrLines(languageTag, memory, length, lengthOut)
 					: null;
-		} // try
 			//
-		try {
+			final int length1 = lengthOut.getValue();
 			//
-			final List<?> list = cast(List.class,
-					testAndApply(Objects::nonNull, string, x -> new ObjectMapper().readValue(x, Object.class), null));
+			final Pointer[] pointers = pointer != null ? pointer.getPointerArray(0, length1) : null;
 			//
-			return list != null ? list.stream().map(x -> StringEscapeUtils.unescapeJava(toString(x))).toList() : null;
+			List<String> list = null;
 			//
-		} catch (final JsonProcessingException e) {
-			//
-			return Collections.singletonList(string);
+			for (int i = 0; pointers != null && i < Math.min(pointers.length, length1); i++) {
+				//
+				if (list == null) {
+					//
+					list = new ArrayList<>();
+					//
+				} // if
+					//
+				list.add(pointers[i].getWideString(0));
+				//
+			} // for
+				//
+			return list;
 			//
 		} // try
 			//
