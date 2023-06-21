@@ -198,6 +198,14 @@ class OcrImplTest {
 		//
 		Assertions.assertNull(cast(Object.class, null));
 		//
+		if (JNA_INSTANCE == null) {
+			//
+			final Object object = new Object();
+			//
+			Assertions.assertSame(object, cast(Object.class, object));
+			//
+		} // if
+			//
 	}
 
 	private static <T> T cast(final Class<T> clz, final Object instance) throws Throwable {
