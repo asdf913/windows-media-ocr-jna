@@ -1,5 +1,6 @@
 package ocr;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -22,7 +23,7 @@ public class OcrImpl implements Ocr {
 
 		Jna INSTANCE = createJna();
 
-		public String getAvailableRecognizerLanguageTags();
+		public Pointer getAvailableRecognizerLanguageTags(final IntByReference length);
 
 		public Pointer getOcrText(final String languageTag, final Pointer pointer, final int length,
 				final IntByReference intByReference);
@@ -53,29 +54,46 @@ public class OcrImpl implements Ocr {
 	@Override
 	public List<String> getAvailableRecognizerLanguageTags() {
 		//
-		final String string = getAvailableRecognizerLanguageTags(Jna.INSTANCE);
+		return getAvailableRecognizerLanguageTags(Jna.INSTANCE);
 		//
-		try {
-			//
-			final List<?> list = cast(List.class,
-					testAndApply(Objects::nonNull, string, x -> new ObjectMapper().readValue(x, Object.class), null));
-			//
-			return list != null ? list.stream().map(x -> toString(x)).toList() : null;
-			//
-		} catch (final JsonProcessingException e) {
-			//
-			return Collections.singletonList(string);
-			//
-		} // try
-			//
 	}
 
 	private static String toString(final Object instance) {
 		return instance != null ? instance.toString() : null;
 	}
 
-	private static String getAvailableRecognizerLanguageTags(final Jna instance) {
-		return instance != null ? instance.getAvailableRecognizerLanguageTags() : null;
+	private static List<String> getAvailableRecognizerLanguageTags(final Jna instance) {
+		//
+		if (instance != null) {
+			//
+			final IntByReference lengthIbr = new IntByReference();
+			//
+			final Pointer pointer = instance.getAvailableRecognizerLanguageTags(lengthIbr);
+			//
+			final int length = lengthIbr.getValue();
+			//
+			final Pointer[] pointers = pointer.getPointerArray(0, length);
+			//
+			List<String> list = null;
+			//
+			for (int i = 0; pointers != null && i < Math.min(pointers.length, length); i++) {
+				//
+				if (list == null) {
+					//
+					list = new ArrayList<>();
+					//
+				} // if
+					//
+				list.add(pointers[i].getWideString(0));
+				//
+			} // for
+				//
+			return list;
+			//
+		} // if
+			//
+		return null;
+		//
 	}
 
 	@Override

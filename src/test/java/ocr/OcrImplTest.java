@@ -35,9 +35,12 @@ import javassist.util.proxy.ProxyObject;
 
 class OcrImplTest {
 
-	private static Method METHOD_CAST, METHOD_TO_STRING, METHOD_TEST_AND_APPLY, METHOD_GET_STRING = null;
+	private static Method METHOD_CAST, METHOD_TO_STRING, METHOD_TEST_AND_APPLY, METHOD_GET_STRING,
+			METHOD_GET_AVAILABLE_RECOGNIZER_LANGUAGE_TAGS = null;
 
 	private static Object JNA_INSTANCE = null;
+
+	private static Class<?> CLASS_JNA = null;
 
 	@BeforeAll
 	static void beforeAll() throws ReflectiveOperationException {
@@ -54,7 +57,11 @@ class OcrImplTest {
 		(METHOD_GET_STRING = clz.getDeclaredMethod("getString", Pointer.class, Long.TYPE, String.class))
 				.setAccessible(true);
 		//
-		JNA_INSTANCE = Narcissus.getStaticObjectField(Class.forName("ocr.OcrImpl$Jna").getDeclaredField("INSTANCE"));
+		(METHOD_GET_AVAILABLE_RECOGNIZER_LANGUAGE_TAGS = clz.getDeclaredMethod("getAvailableRecognizerLanguageTags",
+				CLASS_JNA = Class.forName("ocr.OcrImpl$Jna"))).setAccessible(true);
+		//
+		JNA_INSTANCE = Narcissus
+				.getStaticObjectField(CLASS_JNA != null ? CLASS_JNA.getDeclaredField("INSTANCE") : null);
 		//
 	}
 
@@ -92,7 +99,7 @@ class OcrImplTest {
 	}
 
 	@Test
-	void testGetAvailableRecognizerLanguageTags() {
+	void testGetAvailableRecognizerLanguageTags() throws Throwable {
 		//
 		final Object availableRecognizerLanguageTags = instance != null ? instance.getAvailableRecognizerLanguageTags()
 				: null;
@@ -101,12 +108,28 @@ class OcrImplTest {
 			//
 			Assertions.assertNotNull(availableRecognizerLanguageTags);
 			//
+			Assertions.assertNull(getAvailableRecognizerLanguageTags(null));
+			//
 		} else {
 			//
 			Assertions.assertNull(availableRecognizerLanguageTags);
 			//
 		} // if
 			//
+	}
+
+	private static List<String> getAvailableRecognizerLanguageTags(final Object jna) throws Throwable {
+		try {
+			final Object obj = METHOD_GET_AVAILABLE_RECOGNIZER_LANGUAGE_TAGS.invoke(null, jna);
+			if (obj == null) {
+				return null;
+			} else if (obj instanceof List) {
+				return (List) obj;
+			}
+			throw new Throwable(toString(obj.getClass()));
+		} catch (final InvocationTargetException e) {
+			throw e.getTargetException();
+		}
 	}
 
 	@Test
