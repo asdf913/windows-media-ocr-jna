@@ -11,6 +11,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -39,7 +40,7 @@ import javassist.util.proxy.ProxyObject;
 class OcrImplTest {
 
 	private static Method METHOD_CAST, METHOD_TEST_AND_APPLY, METHOD_GET_STRING,
-			METHOD_GET_AVAILABLE_RECOGNIZER_LANGUAGE_TAGS = null;
+			METHOD_GET_AVAILABLE_RECOGNIZER_LANGUAGE_TAGS, METHOD_ADD = null;
 
 	private static Object JNA_INSTANCE = null;
 
@@ -60,6 +61,8 @@ class OcrImplTest {
 		//
 		(METHOD_GET_AVAILABLE_RECOGNIZER_LANGUAGE_TAGS = clz.getDeclaredMethod("getAvailableRecognizerLanguageTags",
 				CLASS_JNA = Class.forName("ocr.OcrImpl$Jna"))).setAccessible(true);
+		//
+		(METHOD_ADD = clz.getDeclaredMethod("add", Collection.class, Object.class)).setAccessible(true);
 		//
 		JNA_INSTANCE = Narcissus
 				.getStaticObjectField(CLASS_JNA != null ? CLASS_JNA.getDeclaredField("INSTANCE") : null);
@@ -384,6 +387,25 @@ class OcrImplTest {
 				return (String) obj;
 			}
 			throw new Throwable(toString(obj.getClass()));
+		} catch (final InvocationTargetException e) {
+			throw e.getTargetException();
+		}
+	}
+
+	@Test
+	void testAdd() {
+		//
+		if (JNA_INSTANCE != null) {
+			//
+			Assertions.assertDoesNotThrow(() -> add(null, null));
+			//
+		} // if
+			//
+	}
+
+	private static <E> void add(final Collection<E> instance, final E item) throws Throwable {
+		try {
+			METHOD_ADD.invoke(null, instance, item);
 		} catch (final InvocationTargetException e) {
 			throw e.getTargetException();
 		}

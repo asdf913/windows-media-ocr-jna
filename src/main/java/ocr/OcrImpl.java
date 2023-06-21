@@ -1,10 +1,12 @@
 package ocr;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.function.FailableFunction;
 
 import com.sun.jna.Library;
@@ -70,13 +72,7 @@ public class OcrImpl implements Ocr {
 			//
 			for (int i = 0; pointers != null && i < Math.min(pointers.length, length); i++) {
 				//
-				if (list == null) {
-					//
-					list = new ArrayList<>();
-					//
-				} // if
-					//
-				list.add(pointers[i].getWideString(0));
+				add(list = ObjectUtils.getIfNull(list, ArrayList::new), pointers[i].getWideString(0));
 				//
 			} // for
 				//
@@ -86,6 +82,12 @@ public class OcrImpl implements Ocr {
 			//
 		return null;
 		//
+	}
+
+	private static <E> void add(final Collection<E> instance, final E item) {
+		if (instance != null) {
+			instance.add(item);
+		}
 	}
 
 	@Override
@@ -143,13 +145,7 @@ public class OcrImpl implements Ocr {
 			//
 			for (int i = 0; pointers != null && i < Math.min(pointers.length, length1); i++) {
 				//
-				if (list == null) {
-					//
-					list = new ArrayList<>();
-					//
-				} // if
-					//
-				list.add(pointers[i].getWideString(0));
+				add(list = ObjectUtils.getIfNull(list, ArrayList::new), pointers[i].getWideString(0));
 				//
 			} // for
 				//
