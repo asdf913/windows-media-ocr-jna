@@ -65,25 +65,27 @@ public class OcrImpl implements Ocr {
 			//
 			final IntByReference lengthIbr = new IntByReference();
 			//
-			final Pointer pointer = instance.getAvailableRecognizerLanguageTags(lengthIbr);
-			//
-			final int length = lengthIbr.getValue();
-			//
-			final Pointer[] pointers = pointer != null ? pointer.getPointerArray(0, length) : null;
-			//
-			List<String> list = null;
-			//
-			for (int i = 0; pointers != null && i < Math.min(pointers.length, length); i++) {
-				//
-				add(list = ObjectUtils.getIfNull(list, ArrayList::new), pointers[i].getWideString(0));
-				//
-			} // for
-				//
-			return list;
+			return getList(instance.getAvailableRecognizerLanguageTags(lengthIbr), lengthIbr.getValue());
 			//
 		} // if
 			//
 		return null;
+		//
+	}
+
+	private static List<String> getList(final Pointer pointer, final int length) {
+		//
+		final Pointer[] pointers = pointer != null ? pointer.getPointerArray(0, length) : null;
+		//
+		List<String> list = null;
+		//
+		for (int i = 0; pointers != null && i < Math.min(pointers.length, length); i++) {
+			//
+			add(list = ObjectUtils.getIfNull(list, ArrayList::new), pointers[i].getWideString(0));
+			//
+		} // for
+			//
+		return list;
 		//
 	}
 
@@ -132,27 +134,14 @@ public class OcrImpl implements Ocr {
 				//
 			} // if
 				//
-			final IntByReference lengthOut = new IntByReference();
-			//
 			final Jna instance = Jna.INSTANCE;
 			//
-			final Pointer pointer = instance != null && memory != null
-					? instance.getOcrLines(languageTag, memory, length, lengthOut)
-					: null;
+			final IntByReference lengthOut = new IntByReference();
 			//
-			final int length1 = lengthOut.getValue();
-			//
-			final Pointer[] pointers = pointer != null ? pointer.getPointerArray(0, length1) : null;
-			//
-			List<String> list = null;
-			//
-			for (int i = 0; pointers != null && i < Math.min(pointers.length, length1); i++) {
-				//
-				add(list = ObjectUtils.getIfNull(list, ArrayList::new), pointers[i].getWideString(0));
-				//
-			} // for
-				//
-			return list;
+			return getList(
+					instance != null && memory != null ? instance.getOcrLines(languageTag, memory, length, lengthOut)
+							: null,
+					lengthOut.getValue());
 			//
 		} // try
 			//
@@ -171,27 +160,14 @@ public class OcrImpl implements Ocr {
 				//
 			} // if
 				//
-			final IntByReference lengthOut = new IntByReference();
-			//
 			final Jna instance = Jna.INSTANCE;
 			//
-			final Pointer pointer = instance != null && memory != null
-					? instance.getOcrWords(languageTag, memory, length, lengthOut)
-					: null;
+			final IntByReference lengthOut = new IntByReference();
 			//
-			final int length1 = lengthOut.getValue();
-			//
-			final Pointer[] pointers = pointer != null ? pointer.getPointerArray(0, length1) : null;
-			//
-			List<String> list = null;
-			//
-			for (int i = 0; pointers != null && i < Math.min(pointers.length, length1); i++) {
-				//
-				add(list = ObjectUtils.getIfNull(list, ArrayList::new), pointers[i].getWideString(0));
-				//
-			} // for
-				//
-			return list;
+			return getList(
+					instance != null && memory != null ? instance.getOcrWords(languageTag, memory, length, lengthOut)
+							: null,
+					lengthOut.getValue());
 			//
 		} // try
 			//
