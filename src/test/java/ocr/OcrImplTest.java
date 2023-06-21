@@ -213,6 +213,14 @@ class OcrImplTest {
 		//
 		Assertions.assertNull(toString(null));
 		//
+		if (JNA_INSTANCE == null) {
+			//
+			final String string = "";
+			//
+			Assertions.assertSame(string, toString(string));
+			//
+		} // if
+			//
 	}
 
 	private static String toString(final Object instance) throws Throwable {
@@ -236,6 +244,12 @@ class OcrImplTest {
 		//
 		Assertions.assertNull(testAndApply(Predicates.alwaysFalse(), null, null, null));
 		//
+		if (JNA_INSTANCE == null) {
+			//
+			Assertions.assertNull(testAndApply(Predicates.alwaysTrue(), null, x -> null, null));
+			//
+		} // if
+			//
 	}
 
 	private static <T, R, E extends Throwable> R testAndApply(final Predicate<T> predicate, final T value,
