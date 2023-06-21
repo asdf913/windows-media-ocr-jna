@@ -290,8 +290,6 @@ class OcrImplTest {
 					//
 			} // if
 				//
-			string.chars().mapToObj(c -> String.valueOf((char) c)).toList();
-			//
 			final List<String> strings = instance != null ? instance.getOcrWords(languageTag, bs) : null;
 			//
 			Assertions.assertEquals(string.chars().mapToObj(c -> String.valueOf((char) c)).toList(),
