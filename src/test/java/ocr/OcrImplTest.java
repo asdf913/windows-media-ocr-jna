@@ -258,6 +258,57 @@ class OcrImplTest {
 			//
 	}
 
+	@Test
+	void testGetOcrWords() throws IOException {
+		//
+		Assertions.assertNull(instance != null ? instance.getOcrWords(null, null) : null);
+		//
+		final List<String> availableRecognizerLanguageTags = instance != null
+				? instance.getAvailableRecognizerLanguageTags()
+				: null;
+		//
+		final String string = "中文字";
+		//
+		final byte[] bs = createBufferedImageBytes(new IntPair(250, 250), new Font("TimesRoman", Font.PLAIN, 40),
+				Color.RED, string);
+		//
+		if (JNA_INSTANCE != null) {
+			//
+			String languageTag = null;
+			//
+			if (availableRecognizerLanguageTags != null) {
+				//
+				if (availableRecognizerLanguageTags.contains("ja")) {
+					//
+					languageTag = "ja";
+					//
+				} else if (!availableRecognizerLanguageTags.isEmpty()) {
+					//
+					languageTag = availableRecognizerLanguageTags.get(0);
+					//
+				} // if
+					//
+			} // if
+				//
+			string.chars().mapToObj(c -> String.valueOf((char) c)).toList();
+			//
+			final List<String> strings = instance != null ? instance.getOcrWords(languageTag, bs) : null;
+			//
+			Assertions.assertEquals(string.chars().mapToObj(c -> String.valueOf((char) c)).toList(),
+					strings != null ? strings.stream().map(x -> StringUtils.replace(x, " ", "")).toList() : null);
+			//
+		} else {
+			//
+			Assertions.assertNull(instance != null ? instance
+					.getOcrWords(availableRecognizerLanguageTags != null && !availableRecognizerLanguageTags.isEmpty()
+							? availableRecognizerLanguageTags.get(0)
+							: null, bs)
+					: null);
+			//
+		} // if
+			//
+	}
+
 	private static byte[] createBufferedImageBytes(final IntPair dimension, final Font font, final Color color,
 			final String string) throws IOException {
 		//

@@ -29,6 +29,9 @@ public class OcrImpl implements Ocr {
 		public Pointer getOcrLines(final String languageTag, final Pointer pointer, final int length,
 				final IntByReference lengtOut);
 
+		public Pointer getOcrWords(final String languageTag, final Pointer pointer, final int length,
+				final IntByReference lengtOut);
+
 	}
 
 	private static Jna createJna() {
@@ -135,6 +138,45 @@ public class OcrImpl implements Ocr {
 			//
 			final Pointer pointer = instance != null && memory != null
 					? instance.getOcrLines(languageTag, memory, length, lengthOut)
+					: null;
+			//
+			final int length1 = lengthOut.getValue();
+			//
+			final Pointer[] pointers = pointer != null ? pointer.getPointerArray(0, length1) : null;
+			//
+			List<String> list = null;
+			//
+			for (int i = 0; pointers != null && i < Math.min(pointers.length, length1); i++) {
+				//
+				add(list = ObjectUtils.getIfNull(list, ArrayList::new), pointers[i].getWideString(0));
+				//
+			} // for
+				//
+			return list;
+			//
+		} // try
+			//
+	}
+
+	@Override
+	public List<String> getOcrWords(final String languageTag, final byte[] bs) {
+		//
+		final int length = bs != null ? bs.length : 0;
+		//
+		try (final Memory memory = testAndApply(x -> x > 0, length, x -> new Memory(x), null)) {
+			//
+			if (memory != null) {
+				//
+				memory.write(0, bs, 0, length);
+				//
+			} // if
+				//
+			final IntByReference lengthOut = new IntByReference();
+			//
+			final Jna instance = Jna.INSTANCE;
+			//
+			final Pointer pointer = instance != null && memory != null
+					? instance.getOcrWords(languageTag, memory, length, lengthOut)
 					: null;
 			//
 			final int length1 = lengthOut.getValue();
