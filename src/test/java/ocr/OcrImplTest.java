@@ -7,10 +7,12 @@ import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Predicate;
 
 import javax.imageio.ImageIO;
@@ -23,13 +25,17 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.google.common.base.Predicates;
+import com.sun.jna.Pointer;
 
 import edu.stanford.nlp.util.IntPair;
 import io.github.toolfactory.narcissus.Narcissus;
+import javassist.util.proxy.MethodHandler;
+import javassist.util.proxy.ProxyFactory;
+import javassist.util.proxy.ProxyObject;
 
 class OcrImplTest {
 
-	private static Method METHOD_CAST, METHOD_TO_STRING, METHOD_TEST_AND_APPLY = null;
+	private static Method METHOD_CAST, METHOD_TO_STRING, METHOD_TEST_AND_APPLY, METHOD_GET_STRING = null;
 
 	private static Object JNA_INSTANCE = null;
 
@@ -45,8 +51,35 @@ class OcrImplTest {
 		(METHOD_TEST_AND_APPLY = clz.getDeclaredMethod("testAndApply", Predicate.class, Object.class,
 				FailableFunction.class, FailableFunction.class)).setAccessible(true);
 		//
+		(METHOD_GET_STRING = clz.getDeclaredMethod("getString", Pointer.class, Long.TYPE, String.class))
+				.setAccessible(true);
+		//
 		JNA_INSTANCE = Narcissus.getStaticObjectField(Class.forName("ocr.OcrImpl$Jna").getDeclaredField("INSTANCE"));
 		//
+	}
+
+	private static class MH implements MethodHandler {
+
+		@Override
+		public Object invoke(final Object self, final Method thisMethod, final Method proceed, final Object[] args)
+				throws Throwable {
+			//
+			final String methodName = thisMethod != null ? thisMethod.getName() : null;
+			//
+			if (self instanceof Pointer) {
+				//
+				if (Objects.equals(methodName, "getString")) {
+					//
+					return null;
+					//
+				} // if
+					//
+			} // if
+				//
+			throw new Throwable(methodName);
+			//
+		}
+
 	}
 
 	private OcrImpl instance = null;
@@ -239,7 +272,7 @@ class OcrImplTest {
 			} else if (obj instanceof String) {
 				return (String) obj;
 			}
-			throw new Throwable(obj.getClass() != null ? obj.getClass().toString() : null);
+			throw new Throwable(toString(obj.getClass()));
 		} catch (final InvocationTargetException e) {
 			throw e.getTargetException();
 		}
@@ -265,6 +298,57 @@ class OcrImplTest {
 			throws Throwable {
 		try {
 			return (R) METHOD_TEST_AND_APPLY.invoke(null, predicate, value, functionTrue, functionFalse);
+		} catch (final InvocationTargetException e) {
+			throw e.getTargetException();
+		}
+	}
+
+	@Test
+	void testGetString() throws Throwable {
+		//
+		if (JNA_INSTANCE != null) {
+			//
+			Assertions.assertNull(getString(null, 0, null));
+			//
+		} else {
+			//
+			Assertions.assertNull(getString(createProxy(Pointer.class, new MH()), 0, null));
+			//
+		} // if
+			//
+	}
+
+	private static <T> T createProxy(final Class<T> superClass, final MethodHandler mh) throws Throwable {
+		//
+		final ProxyFactory proxyFactory = new ProxyFactory();
+		//
+		proxyFactory.setSuperclass(superClass);
+		//
+		final Class<?> clz = proxyFactory.createClass();
+		//
+		final Constructor<?> constructor = clz != null ? clz.getDeclaredConstructor() : null;
+		//
+		final Object instance = constructor != null ? constructor.newInstance() : null;
+		//
+		if (instance instanceof ProxyObject) {
+			//
+			((ProxyObject) instance).setHandler(mh);
+			//
+		} // if
+			//
+		return (T) cast(clz, instance);
+		//
+	}
+
+	private static String getString(final Pointer instance, final long offset, final String encoding) throws Throwable {
+		try {
+			final Object obj = METHOD_GET_STRING.invoke(null, instance, offset, encoding);
+			if (obj == null) {
+				return null;
+			} else if (obj instanceof String) {
+				return (String) obj;
+			}
+			throw new Throwable(toString(obj.getClass()));
 		} catch (final InvocationTargetException e) {
 			throw e.getTargetException();
 		}
