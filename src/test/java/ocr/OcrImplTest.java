@@ -8,6 +8,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collections;
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
 
+import javax.annotation.Nullable;
 import javax.imageio.ImageIO;
 
 import org.apache.commons.lang3.StringUtils;
@@ -25,6 +27,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.google.common.base.Predicates;
+import com.google.common.reflect.Reflection;
 import com.sun.jna.Pointer;
 
 import edu.stanford.nlp.util.IntPair;
@@ -87,6 +90,30 @@ class OcrImplTest {
 
 	}
 
+	private static class IH implements InvocationHandler {
+
+		@Override
+		public Object invoke(final Object proxy, @Nullable final Method method, @Nullable final Object[] args)
+				throws Throwable {
+			//
+			final String methodName = method != null ? method.getName() : null;
+			//
+			if (CLASS_JNA != null && CLASS_JNA.isInstance(proxy)) {
+				//
+				if (Objects.equals(methodName, "getAvailableRecognizerLanguageTags")) {
+					//
+					return null;
+					//
+				} // if
+					//
+			} // if
+				//
+			throw new Throwable(methodName);
+			//
+		}
+
+	}
+
 	private OcrImpl instance = null;
 
 	@BeforeEach
@@ -101,6 +128,8 @@ class OcrImplTest {
 		//
 		final Object availableRecognizerLanguageTags = instance != null ? instance.getAvailableRecognizerLanguageTags()
 				: null;
+		//
+		Assertions.assertNull(getAvailableRecognizerLanguageTags(Reflection.newProxy(CLASS_JNA, new IH())));
 		//
 		if (JNA_INSTANCE != null) {
 			//

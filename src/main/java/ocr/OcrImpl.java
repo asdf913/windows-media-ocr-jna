@@ -64,7 +64,7 @@ public class OcrImpl implements Ocr {
 			//
 			final int length = lengthIbr.getValue();
 			//
-			final Pointer[] pointers = pointer.getPointerArray(0, length);
+			final Pointer[] pointers = pointer != null ? pointer.getPointerArray(0, length) : null;
 			//
 			List<String> list = null;
 			//
