@@ -8,4 +8,6 @@ public interface Ocr {
 
 	public String getOcrText(final String languageTag, final byte[] bs);
 
+	public List<String> getOcrLines(final String languageTag, final byte[] bs);
+
 }

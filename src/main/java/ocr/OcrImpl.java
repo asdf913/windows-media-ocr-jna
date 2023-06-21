@@ -6,6 +6,7 @@ import java.util.Objects;
 import java.util.function.Predicate;
 
 import org.apache.commons.lang3.function.FailableFunction;
+import org.apache.commons.text.StringEscapeUtils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,6 +25,9 @@ public class OcrImpl implements Ocr {
 		public String getAvailableRecognizerLanguageTags();
 
 		public Pointer getOcrText(final String languageTag, final Pointer pointer, final int length,
+				final IntByReference intByReference);
+
+		public String getOcrLinesAsJson(final String languageTag, final Pointer pointer, final int length,
 				final IntByReference intByReference);
 
 	}
@@ -89,6 +93,37 @@ public class OcrImpl implements Ocr {
 		//
 		return getString(pointer, 0, "UTF-8");
 		//
+	}
+
+	@Override
+	public List<String> getOcrLines(final String languageTag, final byte[] bs) {
+		//
+		final int length = bs != null ? bs.length : 0;
+		//
+		final Memory memory = new Memory(length);
+		//
+		memory.write(0, bs, 0, length);
+		///
+		final IntByReference intByReference = new IntByReference();
+		//
+		final Jna instance = Jna.INSTANCE;
+		//
+		final String string = instance != null ? instance.getOcrLinesAsJson(languageTag, memory, length, intByReference)
+				: null;
+		//
+		try {
+			//
+			final List<?> list = cast(List.class,
+					testAndApply(Objects::nonNull, string, x -> new ObjectMapper().readValue(x, Object.class), null));
+			//
+			return list != null ? list.stream().map(x -> StringEscapeUtils.unescapeJava(toString(x))).toList() : null;
+			//
+		} catch (final JsonProcessingException e) {
+			//
+			return Collections.singletonList(string);
+			//
+		} // try
+			//
 	}
 
 	private static String getString(final Pointer instance, final long offset, final String encoding) {

@@ -9,6 +9,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -23,6 +24,7 @@ import org.junit.jupiter.api.Test;
 
 import com.google.common.base.Predicates;
 
+import edu.stanford.nlp.util.IntPair;
 import io.github.toolfactory.narcissus.Narcissus;
 
 class OcrImplTest {
@@ -81,34 +83,11 @@ class OcrImplTest {
 				? instance.getAvailableRecognizerLanguageTags()
 				: null;
 		//
-		final BufferedImage bufferedImage = new BufferedImage(250, 250, BufferedImage.TYPE_INT_RGB);
+		final String string = "中文字";
 		//
-		final Graphics graphics = bufferedImage.getGraphics();
+		final byte[] bs = createBufferedImageBytes(new IntPair(250, 250), new Font("TimesRoman", Font.PLAIN, 40),
+				Color.RED, string);
 		//
-		final String string = "Hello world";
-		//
-		if (graphics != null) {
-			//
-			graphics.setColor(Color.RED);
-			//
-			graphics.setFont(new Font("TimesRoman", Font.PLAIN, 40));
-			//
-			final FontMetrics fm = graphics.getFontMetrics();
-			//
-			graphics.drawString(string, bufferedImage.getWidth() - fm.stringWidth(string) - 5, fm.getHeight());
-			//
-		} // if
-			//
-		byte[] bs = null;
-		//
-		try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-			//
-			ImageIO.write(bufferedImage, "jpg", baos);
-			//
-			bs = baos.toByteArray();
-			//
-		} // try
-			//
 		if (JNA_INSTANCE != null) {
 			//
 			final String result = StringUtils.trim(instance != null ? instance
@@ -129,6 +108,87 @@ class OcrImplTest {
 			//
 		} // if
 			//
+	}
+
+	@Test
+	void testGetOcrLines() throws IOException {
+		//
+		final List<String> availableRecognizerLanguageTags = instance != null
+				? instance.getAvailableRecognizerLanguageTags()
+				: null;
+		//
+		final String string = "中文字";
+		//
+		final byte[] bs = createBufferedImageBytes(new IntPair(250, 250), new Font("TimesRoman", Font.PLAIN, 40),
+				Color.RED, string);
+		//
+		if (JNA_INSTANCE != null) {
+			//
+			String languageTag = null;
+			//
+			if (availableRecognizerLanguageTags != null) {
+				//
+				if (availableRecognizerLanguageTags.contains("ja")) {
+					//
+					languageTag = "ja";
+					//
+				} else if (!availableRecognizerLanguageTags.isEmpty()) {
+					//
+					languageTag = availableRecognizerLanguageTags.get(0);
+					//
+				} // if
+					//
+			} // if
+				//
+			final List<String> strings = instance != null ? instance.getOcrLines(languageTag, bs) : null;
+			//
+			Assertions.assertEquals(Collections.singletonList(string),
+					strings != null ? strings.stream().map(x -> StringUtils.replace(x, " ", "")).toList() : null);
+			//
+		} else {
+			//
+			Assertions.assertNull(instance != null ? instance
+					.getOcrLines(availableRecognizerLanguageTags != null && !availableRecognizerLanguageTags.isEmpty()
+							? availableRecognizerLanguageTags.get(0)
+							: null, bs)
+					: null);
+			//
+		} // if
+			//
+	}
+
+	private static byte[] createBufferedImageBytes(final IntPair dimension, final Font font, final Color color,
+			final String string) throws IOException {
+		//
+		final BufferedImage bufferedImage = new BufferedImage(dimension != null ? dimension.getSource() : 0,
+				dimension != null ? dimension.getTarget() : 0, BufferedImage.TYPE_INT_RGB);
+		//
+		final Graphics graphics = bufferedImage.getGraphics();
+		//
+		if (graphics != null) {
+			//
+			graphics.setColor(color);
+			//
+			graphics.setFont(font);
+			//
+			final FontMetrics fm = graphics.getFontMetrics();
+			//
+			graphics.drawString(string, bufferedImage.getWidth() - fm.stringWidth(string) - 5, fm.getHeight());
+			//
+		} // if
+			//
+		byte[] bs = null;
+		//
+		try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+			//
+			ImageIO.write(bufferedImage, "jpg", baos);
+			//
+			bs = baos.toByteArray();
+			//
+		} // try
+			//
+		return bs;
+		//
 	}
 
 	@Test
