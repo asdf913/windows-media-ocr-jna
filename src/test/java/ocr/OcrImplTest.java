@@ -13,6 +13,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
@@ -395,9 +396,15 @@ class OcrImplTest {
 	@Test
 	void testAdd() {
 		//
-		if (JNA_INSTANCE != null) {
+		Assertions.assertDoesNotThrow(() -> add(null, null));
+		//
+		if (JNA_INSTANCE == null) {
 			//
-			Assertions.assertDoesNotThrow(() -> add(null, null));
+			final Collection<?> collection = new LinkedHashSet<>();
+			//
+			Assertions.assertDoesNotThrow(() -> add(collection, null));
+			//
+			Assertions.assertEquals(Collections.singleton(null), collection);
 			//
 		} // if
 			//
