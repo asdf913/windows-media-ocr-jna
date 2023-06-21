@@ -85,13 +85,18 @@ public class OcrImpl implements Ocr {
 		//
 		Pointer pointer = null;
 		//
-		try (final Memory memory = new Memory(length)) {
+		try (final Memory memory = testAndApply(x -> x > 0, length, x -> new Memory(x), null)) {
 			//
-			memory.write(0, bs, 0, length);
-			///
+			if (memory != null) {
+				//
+				memory.write(0, bs, 0, length);
+				//
+			} // if
+				///
 			final IntByReference intByReference = new IntByReference();
 			//
-			pointer = getOcrText(Jna.INSTANCE, languageTag, memory, length, intByReference);
+			pointer = testAndApply(Objects::nonNull, memory,
+					x -> getOcrText(Jna.INSTANCE, languageTag, x, length, intByReference), null);
 			//
 			return getString(pointer, 0, "UTF-8");
 			//
@@ -106,15 +111,21 @@ public class OcrImpl implements Ocr {
 		//
 		String string = null;
 		//
-		try (final Memory memory = new Memory(length)) {
+		try (final Memory memory = testAndApply(x -> x > 0, length, x -> new Memory(x), null)) {
 			//
-			memory.write(0, bs, 0, length);
-			///
+			if (memory != null) {
+				//
+				memory.write(0, bs, 0, length);
+				//
+			} // if
+				//
 			final IntByReference intByReference = new IntByReference();
 			//
 			final Jna instance = Jna.INSTANCE;
 			//
-			string = instance != null ? instance.getOcrLinesAsJson(languageTag, memory, length, intByReference) : null;
+			string = instance != null && memory != null
+					? instance.getOcrLinesAsJson(languageTag, memory, length, intByReference)
+					: null;
 		} // try
 			//
 		try {

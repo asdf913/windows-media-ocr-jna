@@ -112,6 +112,8 @@ class OcrImplTest {
 	@Test
 	void testGetOcrText() throws IOException {
 		//
+		Assertions.assertNull(instance != null ? instance.getOcrText(null, null) : null);
+		//
 		final List<String> availableRecognizerLanguageTags = instance != null
 				? instance.getAvailableRecognizerLanguageTags()
 				: null;
@@ -145,6 +147,8 @@ class OcrImplTest {
 
 	@Test
 	void testGetOcrLines() throws IOException {
+		//
+		Assertions.assertNull(instance != null ? instance.getOcrLines(null, null) : null);
 		//
 		final List<String> availableRecognizerLanguageTags = instance != null
 				? instance.getAvailableRecognizerLanguageTags()
@@ -306,11 +310,7 @@ class OcrImplTest {
 	@Test
 	void testGetString() throws Throwable {
 		//
-		if (JNA_INSTANCE != null) {
-			//
-			Assertions.assertNull(getString(null, 0, null));
-			//
-		} else {
+		if (JNA_INSTANCE == null) {
 			//
 			Assertions.assertNull(getString(createProxy(Pointer.class, new MH()), 0, null));
 			//
