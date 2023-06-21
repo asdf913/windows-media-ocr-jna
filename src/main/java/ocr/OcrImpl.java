@@ -83,16 +83,20 @@ public class OcrImpl implements Ocr {
 		//
 		final int length = bs != null ? bs.length : 0;
 		//
-		final Memory memory = new Memory(length);
+		Pointer pointer = null;
 		//
-		memory.write(0, bs, 0, length);
-		///
-		final IntByReference intByReference = new IntByReference();
-		//
-		final Pointer pointer = getOcrText(Jna.INSTANCE, languageTag, memory, length, intByReference);
-		//
-		return getString(pointer, 0, "UTF-8");
-		//
+		try (final Memory memory = new Memory(length)) {
+			//
+			memory.write(0, bs, 0, length);
+			///
+			final IntByReference intByReference = new IntByReference();
+			//
+			pointer = getOcrText(Jna.INSTANCE, languageTag, memory, length, intByReference);
+			//
+			return getString(pointer, 0, "UTF-8");
+			//
+		} // try
+			//
 	}
 
 	@Override
@@ -100,17 +104,19 @@ public class OcrImpl implements Ocr {
 		//
 		final int length = bs != null ? bs.length : 0;
 		//
-		final Memory memory = new Memory(length);
+		String string = null;
 		//
-		memory.write(0, bs, 0, length);
-		///
-		final IntByReference intByReference = new IntByReference();
-		//
-		final Jna instance = Jna.INSTANCE;
-		//
-		final String string = instance != null ? instance.getOcrLinesAsJson(languageTag, memory, length, intByReference)
-				: null;
-		//
+		try (final Memory memory = new Memory(length)) {
+			//
+			memory.write(0, bs, 0, length);
+			///
+			final IntByReference intByReference = new IntByReference();
+			//
+			final Jna instance = Jna.INSTANCE;
+			//
+			string = instance != null ? instance.getOcrLinesAsJson(languageTag, memory, length, intByReference) : null;
+		} // try
+			//
 		try {
 			//
 			final List<?> list = cast(List.class,

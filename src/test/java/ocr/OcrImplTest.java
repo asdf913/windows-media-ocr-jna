@@ -83,7 +83,7 @@ class OcrImplTest {
 				? instance.getAvailableRecognizerLanguageTags()
 				: null;
 		//
-		final String string = "中文字";
+		final String string = "Hello world";
 		//
 		final byte[] bs = createBufferedImageBytes(new IntPair(250, 250), new Font("TimesRoman", Font.PLAIN, 40),
 				Color.RED, string);
