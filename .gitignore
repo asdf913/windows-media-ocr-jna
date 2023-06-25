@@ -6,3 +6,7 @@
 /jar/target
 /jar/.classpath
 /jar/.project
+/swing/.settings
+/swing/target
+/swing/.classpath
+/swing/.project
