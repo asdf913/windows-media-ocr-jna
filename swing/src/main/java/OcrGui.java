@@ -211,7 +211,7 @@ public class OcrGui extends JFrame implements ActionListener {
 		//
 		if (Objects.equals(getSource(evt), abFile)) {
 			//
-			final String languageTag = cbmLanaguageTag != null ? toString(cbmLanaguageTag.getSelectedItem()) : null;
+			final String languageTag = toString(getSelectedItem(cbmLanaguageTag));
 			//
 			if (languageTag == null) {
 				//
@@ -258,6 +258,10 @@ public class OcrGui extends JFrame implements ActionListener {
 				//
 		} // if
 			//
+	}
+
+	private static Object getSelectedItem(final ComboBoxModel<?> instance) {
+		return instance != null ? instance.getSelectedItem() : null;
 	}
 
 	private static Object getSource(final EventObject instance) {

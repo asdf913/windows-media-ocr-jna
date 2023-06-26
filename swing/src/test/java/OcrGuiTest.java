@@ -5,7 +5,9 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,7 +18,7 @@ import net.miginfocom.swing.MigLayout;
 
 class OcrGuiTest {
 
-	private static Method METHOD_INIT = null;
+	private static Method METHOD_INIT, METHOD_GET_SELECTED_ITEM = null;
 
 	@BeforeAll
 	static void beforeAll() throws ReflectiveOperationException {
@@ -24,6 +26,8 @@ class OcrGuiTest {
 		final Class<?> clz = OcrGui.class;
 		//
 		(METHOD_INIT = clz.getDeclaredMethod("init")).setAccessible(true);
+		//
+		(METHOD_GET_SELECTED_ITEM = clz.getDeclaredMethod("getSelectedItem", ComboBoxModel.class)).setAccessible(true);
 		//
 	}
 
@@ -89,6 +93,21 @@ class OcrGuiTest {
 	private static void actionPerformed(final ActionListener instance, final ActionEvent actionEvent) {
 		if (instance != null) {
 			instance.actionPerformed(actionEvent);
+		}
+	}
+
+	@Test
+	void testGetSelectedItem() throws Throwable {
+		//
+		Assertions.assertNull(getSelectedItem(new DefaultComboBoxModel<>()));
+		//
+	}
+
+	private static Object getSelectedItem(final ComboBoxModel<?> instance) throws Throwable {
+		try {
+			return (Object) METHOD_GET_SELECTED_ITEM.invoke(null, instance);
+		} catch (final InvocationTargetException e) {
+			throw e.getTargetException();
 		}
 	}
 
