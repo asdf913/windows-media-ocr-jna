@@ -48,11 +48,11 @@ public class OcrGui extends JFrame implements ActionListener {
 
 	private JTextComponent jtcFile, jtcText = null;
 
-	private ComboBoxModel<?> cbmLanaguageTag = null;
+	private transient ComboBoxModel<?> cbmLanaguageTag = null;
 
 	private AbstractButton abFile = null;
 
-	private Ocr ocr = null;
+	private transient Ocr ocr = null;
 
 	private OcrGui() {
 	}
