@@ -75,7 +75,6 @@ class OcrGuiTest {
 		try {
 			METHOD_INIT.invoke(instance);
 		} catch (final InvocationTargetException e) {
-			ExceptionUtils.getRootCause(e).printStackTrace();
 			throw e.getTargetException();
 		}
 	}

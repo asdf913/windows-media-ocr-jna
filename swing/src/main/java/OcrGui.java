@@ -75,11 +75,9 @@ public class OcrGui extends JFrame implements ActionListener {
 		//
 		final Ocr ocr = getOcr();
 		//
-		final List<String> languageTags = ocr != null ? ocr.getAvailableRecognizerLanguageTags() : null;
-		//
 		final DefaultComboBoxModel<String> dcbm = new DefaultComboBoxModel<>();
 		//
-		dcbm.addAll(languageTags);
+		testAndAccept(Objects::nonNull, ocr != null ? ocr.getAvailableRecognizerLanguageTags() : null, dcbm::addAll);
 		//
 		final String wrap = "wrap";
 		//
