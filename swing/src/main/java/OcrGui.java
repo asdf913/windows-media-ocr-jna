@@ -11,6 +11,7 @@ import java.lang.reflect.Member;
 import java.lang.reflect.Proxy;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.EventObject;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiConsumer;
@@ -18,6 +19,7 @@ import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
 import javax.swing.AbstractButton;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
@@ -208,7 +210,7 @@ public class OcrGui extends JFrame implements ActionListener {
 	@Override
 	public void actionPerformed(final ActionEvent evt) {
 		//
-		if (Objects.equals(evt != null ? evt.getSource() : null, abFile)) {
+		if (Objects.equals(getSource(evt), abFile)) {
 			//
 			final String languageTag = cbmLanaguageTag != null ? toString(cbmLanaguageTag.getSelectedItem()) : null;
 			//
@@ -257,6 +259,10 @@ public class OcrGui extends JFrame implements ActionListener {
 				//
 		} // if
 			//
+	}
+
+	private static Object getSource(final EventObject instance) {
+		return instance != null ? instance.getSource() : null;
 	}
 
 	private static String getAbsolutePath(final File instance) {
