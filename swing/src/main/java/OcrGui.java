@@ -146,8 +146,12 @@ public class OcrGui extends JFrame implements ActionListener {
 			if (languageTag == null) {
 				//
 				if (!GraphicsEnvironment.isHeadless() && !Arrays.stream(new Throwable().getStackTrace())
-						.anyMatch(x -> StringUtils.equals("org.eclipse.jdt.internal.junit5.runner.JUnit5TestReference",
-								x != null ? x.getClassName() : null))) {
+						.anyMatch(x -> !Arrays
+								.asList("org.eclipse.jdt.internal.junit5.runner.JUnit5TestReference",
+										"org.apache.maven.surefire.junitplatform.JUnitPlatformProvider")
+								.contains(x != null ? x.getClassName() : null)
+						//
+						)) {
 					//
 					JOptionPane.showMessageDialog(null, "Please select a Language Tag");
 					//
