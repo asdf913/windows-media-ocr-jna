@@ -5,6 +5,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -74,6 +75,7 @@ class OcrGuiTest {
 		try {
 			METHOD_INIT.invoke(instance);
 		} catch (final InvocationTargetException e) {
+			ExceptionUtils.getRootCause(e).printStackTrace();
 			throw e.getTargetException();
 		}
 	}
