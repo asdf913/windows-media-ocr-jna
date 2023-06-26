@@ -240,19 +240,16 @@ public class OcrGui extends JFrame implements ActionListener {
 			//
 			final String languageTag = toString(getSelectedItem(cbmLanaguageTag));
 			//
-			final boolean isHeadless = GraphicsEnvironment.isHeadless();
-			//
-			final boolean isNotUnderDebugOrTest = Arrays.stream(new Throwable().getStackTrace())
-					.noneMatch(x -> Arrays
-							.asList("org.eclipse.jdt.internal.junit5.runner.JUnit5TestReference",
-									"org.apache.maven.surefire.junitplatform.JUnitPlatformProvider")
-							.contains(getClassName(x))
-					//
-					);
+			final boolean isNotHeadLessAndisNotUnderDebugOrTest = !GraphicsEnvironment.isHeadless()
+					&& Arrays.stream(new Throwable().getStackTrace())
+							.noneMatch(x -> Arrays
+									.asList("org.eclipse.jdt.internal.junit5.runner.JUnit5TestReference",
+											"org.apache.maven.surefire.junitplatform.JUnitPlatformProvider")
+									.contains(getClassName(x)));
 			//
 			if (languageTag == null) {
 				//
-				if (!isHeadless && isNotUnderDebugOrTest) {
+				if (isNotHeadLessAndisNotUnderDebugOrTest) {
 					//
 					JOptionPane.showMessageDialog(null, "Please select a Language Tag");
 					//
@@ -266,7 +263,7 @@ public class OcrGui extends JFrame implements ActionListener {
 			//
 			File file = null;
 			//
-			if (!isHeadless && isNotUnderDebugOrTest && jfc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+			if (isNotHeadLessAndisNotUnderDebugOrTest && jfc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
 				//
 				file = jfc.getSelectedFile();
 				//
