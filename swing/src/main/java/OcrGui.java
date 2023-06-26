@@ -74,11 +74,11 @@ public class OcrGui extends JFrame implements ActionListener {
 		//
 		testAndAccept(predicate, new JLabel("Language Tag"), this::add);
 		//
-		final Ocr ocr = getOcr();
+		final Ocr o = getOcr();
 		//
 		final DefaultComboBoxModel<String> dcbm = new DefaultComboBoxModel<>();
 		//
-		testAndAccept(Objects::nonNull, ocr != null ? ocr.getAvailableRecognizerLanguageTags() : null, dcbm::addAll);
+		testAndAccept(Objects::nonNull, o != null ? o.getAvailableRecognizerLanguageTags() : null, dcbm::addAll);
 		//
 		final String wrap = "wrap";
 		//
@@ -244,10 +244,10 @@ public class OcrGui extends JFrame implements ActionListener {
 			//
 			try {
 				//
-				final Ocr ocr = getOcr();
+				final Ocr o = getOcr();
 				//
 				setText(jtcText,
-						ocr != null ? ocr.getOcrText(
+						o != null ? o.getOcrText(
 								cbmLanaguageTag != null ? toString(cbmLanaguageTag.getSelectedItem()) : null,
 								file != null ? FileUtils.readFileToByteArray(file) : null) : null);
 				//
