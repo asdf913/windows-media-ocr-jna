@@ -11,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import io.github.toolfactory.narcissus.Narcissus;
+import net.miginfocom.swing.MigLayout;
 
 class OcrGuiTest {
 
@@ -57,6 +58,14 @@ class OcrGuiTest {
 	@Test
 	void testInit() {
 		//
+		Assertions.assertDoesNotThrow(() -> init());
+		//
+		if (instance != null) {
+			//
+			instance.setLayout(new MigLayout());
+			//
+		} // if
+			//
 		Assertions.assertDoesNotThrow(() -> init());
 		//
 	}

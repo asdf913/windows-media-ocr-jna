@@ -87,9 +87,11 @@ public class OcrGui extends JFrame implements ActionListener {
 		//
 		final boolean isMigLayout = lm instanceof MigLayout;
 		//
+		final BiPredicate<Component, Object> biPredicate = Predicates.biAlways(isGui, null);
+		//
 		if (isMigLayout) {
 			//
-			add(new JComboBox<>(cbmLanaguageTag = dcbm), wrap);
+			testAndAccept(biPredicate, new JComboBox<>(cbmLanaguageTag = dcbm), wrap, this::add);
 			//
 		} // if
 			//
@@ -97,7 +99,7 @@ public class OcrGui extends JFrame implements ActionListener {
 		//
 		if (isMigLayout) {
 			//
-			add(jtcFile = new JTextField(), "wmin 200px");
+			testAndAccept(biPredicate, jtcFile = new JTextField(), "wmin 200px", this::add);
 			//
 		} // if
 			//
@@ -105,7 +107,7 @@ public class OcrGui extends JFrame implements ActionListener {
 		//
 		if (isMigLayout) {
 			//
-			add(abFile = new JButton("File"), wrap);
+			testAndAccept(biPredicate, abFile = new JButton("File"), wrap, this::add);
 			//
 		} // if
 			//
@@ -115,7 +117,7 @@ public class OcrGui extends JFrame implements ActionListener {
 		//
 		if (isMigLayout) {
 			//
-			add(jtcText = new JTextField(), "growx");
+			testAndAccept(biPredicate, jtcText = new JTextField(), "growx", this::add);
 			//
 		} // if
 			//
