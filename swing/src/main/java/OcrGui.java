@@ -28,6 +28,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
+import javax.swing.WindowConstants;
 import javax.swing.text.JTextComponent;
 
 import org.apache.commons.collections4.IterableUtils;
@@ -192,7 +193,7 @@ public class OcrGui extends JFrame implements ActionListener {
 		//
 		final OcrGui instance = new OcrGui();
 		//
-		instance.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		instance.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		//
 		instance.setLayout(new MigLayout());
 		//
