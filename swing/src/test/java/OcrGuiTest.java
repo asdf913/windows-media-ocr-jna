@@ -23,7 +23,7 @@ import ocr.Ocr;
 
 class OcrGuiTest {
 
-	private static Method METHOD_INIT, METHOD_GET_SELECTED_ITEM, METHOD_GET_OCR_TEXT = null;
+	private static Method METHOD_INIT, METHOD_GET_SELECTED_ITEM, METHOD_GET_OCR_TEXT, METHOD_GET_CLASS_NAME = null;
 
 	@BeforeAll
 	static void beforeAll() throws ReflectiveOperationException {
@@ -36,6 +36,8 @@ class OcrGuiTest {
 		//
 		(METHOD_GET_OCR_TEXT = clz.getDeclaredMethod("getOcrText", Ocr.class, String.class, byte[].class))
 				.setAccessible(true);
+		//
+		(METHOD_GET_CLASS_NAME = clz.getDeclaredMethod("getClassName", StackTraceElement.class)).setAccessible(true);
 		//
 	}
 
@@ -166,4 +168,32 @@ class OcrGuiTest {
 		}
 	}
 
+	@Test
+	void testGetClassName() throws Throwable {
+		//
+		Assertions.assertNull(getClassName(null));
+		//
+		if (GraphicsEnvironment.isHeadless()) {
+			//
+			final String className = "className";
+			//
+			Assertions.assertEquals(className, getClassName(new StackTraceElement(className, "", null, 0)));
+			//
+		} // if
+			//
+	}
+
+	private static String getClassName(final StackTraceElement instance) throws Throwable {
+		try {
+			final Object obj = METHOD_GET_CLASS_NAME.invoke(null, instance);
+			if (obj == null) {
+				return null;
+			} else if (obj instanceof String) {
+				return (String) obj;
+			}
+			throw new Throwable(obj.getClass() != null ? obj.getClass().toString() : null);
+		} catch (final InvocationTargetException e) {
+			throw e.getTargetException();
+		}
+	}
 }

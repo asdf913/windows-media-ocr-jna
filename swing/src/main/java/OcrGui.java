@@ -219,7 +219,7 @@ public class OcrGui extends JFrame implements ActionListener {
 						.noneMatch(x -> Arrays
 								.asList("org.eclipse.jdt.internal.junit5.runner.JUnit5TestReference",
 										"org.apache.maven.surefire.junitplatform.JUnitPlatformProvider")
-								.contains(x != null ? x.getClassName() : null)
+								.contains(getClassName(x))
 						//
 						)) {
 					//
@@ -255,6 +255,10 @@ public class OcrGui extends JFrame implements ActionListener {
 				//
 		} // if
 			//
+	}
+
+	private static String getClassName(final StackTraceElement instance) {
+		return instance != null ? instance.getClassName() : null;
 	}
 
 	private static String getOcrText(final Ocr instance, final String languageTag, final byte[] bs) {
