@@ -214,8 +214,8 @@ public class OcrGui extends JFrame implements ActionListener {
 			//
 			if (languageTag == null) {
 				//
-				if (!GraphicsEnvironment.isHeadless() && !Arrays.stream(new Throwable().getStackTrace())
-						.anyMatch(x -> Arrays
+				if (!GraphicsEnvironment.isHeadless() && Arrays.stream(new Throwable().getStackTrace())
+						.noneMatch(x -> Arrays
 								.asList("org.eclipse.jdt.internal.junit5.runner.JUnit5TestReference",
 										"org.apache.maven.surefire.junitplatform.JUnitPlatformProvider")
 								.contains(x != null ? x.getClassName() : null)
