@@ -273,8 +273,8 @@ public class OcrGui extends JFrame implements ActionListener {
 			//
 			try {
 				//
-				setText(jtcText,
-						getOcrText(getOcr(), languageTag, file != null ? FileUtils.readFileToByteArray(file) : null));
+				setText(jtcText, getOcrText(getOcr(), languageTag,
+						testAndApply(Objects::nonNull, file, FileUtils::readFileToByteArray, null)));
 				//
 			} catch (final IOException e) {
 				// TODO Auto-generated catch block
