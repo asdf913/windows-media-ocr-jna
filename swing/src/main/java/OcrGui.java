@@ -245,11 +245,8 @@ public class OcrGui extends JFrame implements ActionListener {
 			//
 			try {
 				//
-				final Ocr o = getOcr();
-				//
 				setText(jtcText,
-						o != null ? o.getOcrText(languageTag, file != null ? FileUtils.readFileToByteArray(file) : null)
-								: null);
+						getOcrText(getOcr(), languageTag, file != null ? FileUtils.readFileToByteArray(file) : null));
 				//
 			} catch (final IOException e) {
 				// TODO Auto-generated catch block
@@ -258,6 +255,10 @@ public class OcrGui extends JFrame implements ActionListener {
 				//
 		} // if
 			//
+	}
+
+	private static String getOcrText(final Ocr instance, final String languageTag, final byte[] bs) {
+		return instance != null ? instance.getOcrText(languageTag, bs) : null;
 	}
 
 	private static Object getSelectedItem(final ComboBoxModel<?> instance) {
