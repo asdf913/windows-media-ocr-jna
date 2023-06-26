@@ -247,9 +247,8 @@ public class OcrGui extends JFrame implements ActionListener {
 				final Ocr o = getOcr();
 				//
 				setText(jtcText,
-						o != null ? o.getOcrText(
-								cbmLanaguageTag != null ? toString(cbmLanaguageTag.getSelectedItem()) : null,
-								file != null ? FileUtils.readFileToByteArray(file) : null) : null);
+						o != null ? o.getOcrText(languageTag, file != null ? FileUtils.readFileToByteArray(file) : null)
+								: null);
 				//
 			} catch (final IOException e) {
 				// TODO Auto-generated catch block
