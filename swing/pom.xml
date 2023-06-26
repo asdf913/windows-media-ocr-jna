@@ -21,6 +21,24 @@
 			<artifactId>miglayout-swing</artifactId>
 			<version>11.1</version>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-collections4 -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-collections4</artifactId>
+			<version>4.4</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/io.github.toolfactory/narcissus -->
+		<dependency>
+			<groupId>io.github.toolfactory</groupId>
+			<artifactId>narcissus</artifactId>
+			<version>1.0.7</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.meeuw.util/mihxil-functional -->
+		<dependency>
+			<groupId>org.meeuw.util</groupId>
+			<artifactId>mihxil-functional</artifactId>
+			<version>1.9</version>
+		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api -->
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
@@ -47,13 +65,6 @@
 			<groupId>org.junit.platform</groupId>
 			<artifactId>junit-platform-runner</artifactId>
 			<version>1.9.3</version>
-			<scope>test</scope>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/io.github.toolfactory/narcissus -->
-		<dependency>
-			<groupId>io.github.toolfactory</groupId>
-			<artifactId>narcissus</artifactId>
-			<version>1.0.7</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

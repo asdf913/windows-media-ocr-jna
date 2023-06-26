@@ -1,3 +1,4 @@
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.GraphicsEnvironment;
 import java.awt.LayoutManager;
@@ -5,9 +6,17 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Member;
+import java.lang.reflect.Proxy;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.BiConsumer;
+import java.util.function.BiPredicate;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import javax.swing.AbstractButton;
 import javax.swing.ComboBoxModel;
@@ -21,9 +30,13 @@ import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.text.JTextComponent;
 
+import org.apache.commons.collections4.IterableUtils;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.function.FailableConsumer;
+import org.apache.commons.lang3.reflect.FieldUtils;
+import org.meeuw.functional.Predicates;
 
+import io.github.toolfactory.narcissus.Narcissus;
 import net.miginfocom.swing.MigLayout;
 import ocr.Ocr;
 import ocr.OcrImpl;
@@ -45,7 +58,20 @@ public class OcrGui extends JFrame implements ActionListener {
 
 	private void init() {
 		//
-		add(new JLabel("Language Tag"));
+		// If "java.awt.Container.component" is null, return this method immediately
+		//
+		// The below check is for "-Djava.awt.headless=true"
+		//
+		final List<Field> fs = toList(filter(stream(FieldUtils.getAllFieldsList(getClass(this))),
+				f -> Objects.equals(getName(f), "component")));
+		//
+		final Field f = IterableUtils.size(fs) == 1 ? IterableUtils.get(fs, 0) : null;
+		//
+		final boolean isGui = f == null || Narcissus.getObjectField(this, f) != null;
+		//
+		final Predicate<Component> predicate = Predicates.always(isGui, null);
+		//
+		testAndAccept(predicate, new JLabel("Language Tag"), this::add);
 		//
 		final Ocr ocr = getOcr();
 		//
@@ -67,7 +93,7 @@ public class OcrGui extends JFrame implements ActionListener {
 			//
 		} // if
 			//
-		add(new JLabel("File"));
+		testAndAccept(predicate, new JLabel("File"), this::add);
 		//
 		if (isMigLayout) {
 			//
@@ -85,7 +111,7 @@ public class OcrGui extends JFrame implements ActionListener {
 			//
 		addActionListener(abFile, this);
 		//
-		add(new JLabel("Text"));
+		testAndAccept(predicate, new JLabel("Text"), this::add);
 		//
 		if (isMigLayout) {
 			//
@@ -95,6 +121,48 @@ public class OcrGui extends JFrame implements ActionListener {
 			//
 		setEditable(jtcText, false);
 		//
+	}
+
+	private static <T, E extends Throwable> void testAndAccept(final Predicate<T> predicate, final T value,
+			final FailableConsumer<T, E> consumer) throws E {
+		if (test(predicate, value) && consumer != null) {
+			consumer.accept(value);
+		}
+	}
+
+	private static final <T> boolean test(final Predicate<T> instance, final T value) {
+		return instance != null && instance.test(value);
+	}
+
+	private static <T, U> void testAndAccept(final BiPredicate<T, U> predicate, final T t, final U u,
+			final BiConsumer<T, U> consumer) {
+		if (predicate != null && predicate.test(t, u) && consumer != null) {
+			consumer.accept(t, u);
+		}
+	}
+
+	private static Class<?> getClass(final Object instance) {
+		return instance != null ? instance.getClass() : null;
+	}
+
+	private static <E> Stream<E> stream(final Collection<E> instance) {
+		return instance != null ? instance.stream() : null;
+	}
+
+	private static <T> Stream<T> filter(final Stream<T> instance, final Predicate<? super T> predicate) {
+		//
+		return instance != null && (predicate != null || Proxy.isProxyClass(getClass(instance)))
+				? instance.filter(predicate)
+				: null;
+		//
+	}
+
+	private static <T> List<T> toList(final Stream<T> instance) {
+		return instance != null ? instance.toList() : null;
+	}
+
+	private static String getName(final Member instance) {
+		return instance != null ? instance.getName() : null;
 	}
 
 	private static void setEditable(final JTextComponent instance, final boolean b) {
