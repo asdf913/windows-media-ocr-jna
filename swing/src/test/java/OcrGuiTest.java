@@ -1,20 +1,35 @@
+import java.awt.Container;
 import java.awt.GraphicsEnvironment;
+import java.awt.LayoutManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Member;
 import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
+import java.util.function.BiConsumer;
+import java.util.function.BiPredicate;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JTextField;
+import javax.swing.text.JTextComponent;
 
+import org.apache.commons.lang3.function.FailableConsumer;
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.google.common.base.Predicates;
 import com.google.common.reflect.Reflection;
 
 import io.github.toolfactory.narcissus.Narcissus;
@@ -23,7 +38,10 @@ import ocr.Ocr;
 
 class OcrGuiTest {
 
-	private static Method METHOD_INIT, METHOD_GET_SELECTED_ITEM, METHOD_GET_OCR_TEXT, METHOD_GET_CLASS_NAME = null;
+	private static Method METHOD_INIT, METHOD_GET_SELECTED_ITEM, METHOD_GET_OCR_TEXT, METHOD_GET_CLASS,
+			METHOD_TO_STRING, METHOD_GET_CLASS_NAME, METHOD_GET_ABSOLUTE_PATH, METHOD_SET_TEXT, METHOD_TEST_AND_ACCEPT3,
+			METHOD_TEST_AND_ACCEPT4, METHOD_STREAM, METHOD_FILTER, METHOD_TO_LIST, METHOD_GET_NAME,
+			METHOD_GET_LAYOUT = null;
 
 	@BeforeAll
 	static void beforeAll() throws ReflectiveOperationException {
@@ -37,7 +55,31 @@ class OcrGuiTest {
 		(METHOD_GET_OCR_TEXT = clz.getDeclaredMethod("getOcrText", Ocr.class, String.class, byte[].class))
 				.setAccessible(true);
 		//
+		(METHOD_GET_CLASS = clz.getDeclaredMethod("getClass", Object.class)).setAccessible(true);
+		//
+		(METHOD_TO_STRING = clz.getDeclaredMethod("toString", Object.class)).setAccessible(true);
+		//
 		(METHOD_GET_CLASS_NAME = clz.getDeclaredMethod("getClassName", StackTraceElement.class)).setAccessible(true);
+		//
+		(METHOD_GET_ABSOLUTE_PATH = clz.getDeclaredMethod("getAbsolutePath", File.class)).setAccessible(true);
+		//
+		(METHOD_SET_TEXT = clz.getDeclaredMethod("setText", JTextComponent.class, String.class)).setAccessible(true);
+		//
+		(METHOD_TEST_AND_ACCEPT3 = clz.getDeclaredMethod("testAndAccept", Predicate.class, Object.class,
+				FailableConsumer.class)).setAccessible(true);
+		//
+		(METHOD_TEST_AND_ACCEPT4 = clz.getDeclaredMethod("testAndAccept", BiPredicate.class, Object.class, Object.class,
+				BiConsumer.class)).setAccessible(true);
+		//
+		(METHOD_STREAM = clz.getDeclaredMethod("stream", Collection.class)).setAccessible(true);
+		//
+		(METHOD_FILTER = clz.getDeclaredMethod("filter", Stream.class, Predicate.class)).setAccessible(true);
+		//
+		(METHOD_TO_LIST = clz.getDeclaredMethod("toList", Stream.class)).setAccessible(true);
+		//
+		(METHOD_GET_NAME = clz.getDeclaredMethod("getName", Member.class)).setAccessible(true);
+		//
+		(METHOD_GET_LAYOUT = clz.getDeclaredMethod("getLayout", Container.class)).setAccessible(true);
 		//
 	}
 
@@ -48,13 +90,21 @@ class OcrGuiTest {
 		@Override
 		public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
 			//
-			final String methodName = method != null ? method.getName() : null;
+			final String methodName = getName(method);
 			//
 			if (proxy instanceof Ocr) {
 				//
 				if (Objects.equals(methodName, "getOcrText")) {
 					//
 					return ocrText;
+					//
+				} // if
+					//
+			} else if (proxy instanceof Stream) {
+				//
+				if (Objects.equals(methodName, "filter")) {
+					//
+					return proxy;
 					//
 				} // if
 					//
@@ -67,6 +117,8 @@ class OcrGuiTest {
 	}
 
 	private OcrGui instance = null;
+
+	private IH ih = null;
 
 	@BeforeEach
 	void beforeEach() throws Throwable {
@@ -88,6 +140,9 @@ class OcrGuiTest {
 			instance = cast(OcrGui.class, Narcissus.allocateInstance(OcrGui.class));
 			//
 		} // if
+			//
+		ih = new IH();
+		//
 	}
 
 	private static <T> T cast(final Class<T> clz, final Object value) {
@@ -118,7 +173,14 @@ class OcrGuiTest {
 	}
 
 	@Test
-	void testActionPerformed() {
+	void testActionPerformed() throws IllegalAccessException {
+		//
+		Assertions.assertDoesNotThrow(() -> actionPerformed(instance, new ActionEvent("", 0, null)));
+		//
+		Assertions.assertDoesNotThrow(() -> actionPerformed(instance, null));
+		//
+		FieldUtils.writeDeclaredField(instance, "cbmLanaguageTag", new DefaultComboBoxModel<>(new Object[] { "" }),
+				true);
 		//
 		Assertions.assertDoesNotThrow(() -> actionPerformed(instance, null));
 		//
@@ -169,6 +231,41 @@ class OcrGuiTest {
 	}
 
 	@Test
+	void testGetClass() throws Throwable {
+		//
+		Assertions.assertNull(getClass(null));
+		//
+	}
+
+	private static Class<?> getClass(final Object instance) throws Throwable {
+		try {
+			final Object obj = METHOD_GET_CLASS.invoke(null, instance);
+			if (obj == null) {
+				return null;
+			} else if (obj instanceof Class<?>) {
+				return (Class<?>) obj;
+			}
+			throw new Throwable(toString(getClass(obj)));
+		} catch (final InvocationTargetException e) {
+			throw e.getTargetException();
+		}
+	}
+
+	private static String toString(final Object instance) throws Throwable {
+		try {
+			final Object obj = METHOD_TO_STRING.invoke(null, instance);
+			if (obj == null) {
+				return null;
+			} else if (obj instanceof String) {
+				return (String) obj;
+			}
+			throw new Throwable(toString(getClass(obj)));
+		} catch (final InvocationTargetException e) {
+			throw e.getTargetException();
+		}
+	}
+
+	@Test
 	void testGetClassName() throws Throwable {
 		//
 		Assertions.assertNull(getClassName(null));
@@ -196,4 +293,203 @@ class OcrGuiTest {
 			throw e.getTargetException();
 		}
 	}
+
+	@Test
+	void testGetAbsolutePath() throws Throwable {
+		//
+		Assertions.assertNotNull(getAbsolutePath(new File(".")));
+		//
+	}
+
+	private static String getAbsolutePath(final File instance) throws Throwable {
+		try {
+			final Object obj = METHOD_GET_ABSOLUTE_PATH.invoke(null, instance);
+			if (obj == null) {
+				return null;
+			} else if (obj instanceof String) {
+				return (String) obj;
+			}
+			throw new Throwable(toString(getClass(obj)));
+		} catch (final InvocationTargetException e) {
+			throw e.getTargetException();
+		}
+	}
+
+	@Test
+	void testSetText() {
+		//
+		Assertions.assertDoesNotThrow(() -> setText(new JTextField(), null));
+		//
+	}
+
+	private static void setText(final JTextComponent instance, final String text) throws Throwable {
+		try {
+			METHOD_SET_TEXT.invoke(null, instance, text);
+		} catch (final InvocationTargetException e) {
+			throw e.getTargetException();
+		}
+	}
+
+	@Test
+	void testTestAndAccept() {
+		//
+		Assertions.assertDoesNotThrow(() -> testAndAccept(null, null, null));
+		//
+		Assertions.assertDoesNotThrow(() -> testAndAccept(null, null, null, null));
+		//
+		Assertions.assertDoesNotThrow(() -> testAndAccept(Predicates.alwaysTrue(), null, null));
+		//
+		Assertions.assertDoesNotThrow(() -> testAndAccept((a, b) -> true, null, null, null));
+		//
+		if (!GraphicsEnvironment.isHeadless()) {
+			//
+			Assertions.assertDoesNotThrow(() -> testAndAccept(Predicates.alwaysFalse(), null, null));
+			//
+			Assertions.assertDoesNotThrow(() -> testAndAccept((a, b) -> false, null, null, null));
+			//
+		} else {
+			//
+			Assertions.assertDoesNotThrow(() -> testAndAccept((a, b) -> true, null, null, (a, b) -> {
+			}));
+			//
+		} // if
+			//
+	}
+
+	private static <T, E extends Throwable> void testAndAccept(final Predicate<T> predicate, final T value,
+			final FailableConsumer<T, E> consumer) throws Throwable {
+		try {
+			METHOD_TEST_AND_ACCEPT3.invoke(null, predicate, value, consumer);
+		} catch (final InvocationTargetException e) {
+			throw e.getTargetException();
+		}
+	}
+
+	private static <T, U> void testAndAccept(final BiPredicate<T, U> predicate, final T t, final U u,
+			final BiConsumer<T, U> consumer) throws Throwable {
+		try {
+			METHOD_TEST_AND_ACCEPT4.invoke(null, predicate, t, u, consumer);
+		} catch (final InvocationTargetException e) {
+			throw e.getTargetException();
+		}
+	}
+
+	@Test
+	void testStream() throws Throwable {
+		//
+		Assertions.assertNull(stream(null));
+		//
+	}
+
+	private static <T> Stream<T> stream(final Collection<T> instance) throws Throwable {
+		try {
+			final Object obj = METHOD_STREAM.invoke(null, instance);
+			if (obj == null) {
+				return null;
+			} else if (obj instanceof Stream) {
+				return (Stream) obj;
+			}
+			throw new Throwable(toString(getClass(obj)));
+		} catch (final InvocationTargetException e) {
+			throw e.getTargetException();
+		}
+	}
+
+	@Test
+	void testFilter() throws Throwable {
+		//
+		Assertions.assertNull(filter(null, null));
+		//
+		Assertions.assertNull(filter(Stream.empty(), null));
+		//
+		final Stream<?> steram = Reflection.newProxy(Stream.class, ih);
+		//
+		Assertions.assertSame(steram, filter(steram, null));
+		//
+	}
+
+	private static <T> Stream<T> filter(final Stream<T> instance, final Predicate<? super T> predicate)
+			throws Throwable {
+		try {
+			final Object obj = METHOD_FILTER.invoke(null, instance, predicate);
+			if (obj == null) {
+				return null;
+			} else if (obj instanceof Stream) {
+				return (Stream) obj;
+			}
+			throw new Throwable(toString(getClass(obj)));
+		} catch (final InvocationTargetException e) {
+			throw e.getTargetException();
+		}
+	}
+
+	@Test
+	void testToList() throws Throwable {
+		//
+		Assertions.assertNull(toList(null));
+		//
+	}
+
+	private static <T> List<T> toList(final Stream<T> instance) throws Throwable {
+		try {
+			final Object obj = METHOD_TO_LIST.invoke(null, instance);
+			if (obj == null) {
+				return null;
+			} else if (obj instanceof List) {
+				return (List) obj;
+			}
+			throw new Throwable(toString(getClass(obj)));
+		} catch (final InvocationTargetException e) {
+			throw e.getTargetException();
+		}
+	}
+
+	@Test
+	void testGetName() throws Throwable {
+		//
+		Assertions.assertNull(getName(null));
+		//
+	}
+
+	private static String getName(final Member instance) throws Throwable {
+		try {
+			final Object obj = METHOD_GET_NAME.invoke(null, instance);
+			if (obj == null) {
+				return null;
+			} else if (obj instanceof String) {
+				return (String) obj;
+			}
+			throw new Throwable(toString(getClass(obj)));
+		} catch (final InvocationTargetException e) {
+			throw e.getTargetException();
+		}
+	}
+
+	@Test
+	void testGetLayout() throws Throwable {
+		//
+		Assertions.assertNull(getLayout(null));
+		//
+		if (GraphicsEnvironment.isHeadless()) {
+			//
+			Assertions.assertNull(getLayout(new Container()));
+			//
+		} // if
+			//
+	}
+
+	private static LayoutManager getLayout(final Container instance) throws Throwable {
+		try {
+			final Object obj = METHOD_GET_LAYOUT.invoke(null, instance);
+			if (obj == null) {
+				return null;
+			} else if (obj instanceof LayoutManager) {
+				return (LayoutManager) obj;
+			}
+			throw new Throwable(toString(getClass(obj)));
+		} catch (final InvocationTargetException e) {
+			throw e.getTargetException();
+		}
+	}
+
 }

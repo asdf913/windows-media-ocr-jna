@@ -83,7 +83,7 @@ public class OcrGui extends JFrame implements ActionListener {
 		//
 		final String wrap = "wrap";
 		//
-		final LayoutManager lm = this.isRootPaneCheckingEnabled() ? getLayout(getContentPane()) : this.getLayout();
+		final LayoutManager lm = isRootPaneCheckingEnabled() ? getLayout(getContentPane()) : getLayout();
 		//
 		final boolean isMigLayout = lm instanceof MigLayout;
 		//
@@ -213,15 +213,19 @@ public class OcrGui extends JFrame implements ActionListener {
 			//
 			final String languageTag = toString(getSelectedItem(cbmLanaguageTag));
 			//
+			final boolean isHeadless = GraphicsEnvironment.isHeadless();
+			//
+			final boolean isNotUnderDebugOrTest = Arrays.stream(new Throwable().getStackTrace())
+					.noneMatch(x -> Arrays
+							.asList("org.eclipse.jdt.internal.junit5.runner.JUnit5TestReference",
+									"org.apache.maven.surefire.junitplatform.JUnitPlatformProvider")
+							.contains(getClassName(x))
+					//
+					);
+			//
 			if (languageTag == null) {
 				//
-				if (!GraphicsEnvironment.isHeadless() && Arrays.stream(new Throwable().getStackTrace())
-						.noneMatch(x -> Arrays
-								.asList("org.eclipse.jdt.internal.junit5.runner.JUnit5TestReference",
-										"org.apache.maven.surefire.junitplatform.JUnitPlatformProvider")
-								.contains(getClassName(x))
-						//
-						)) {
+				if (!isHeadless && isNotUnderDebugOrTest) {
 					//
 					JOptionPane.showMessageDialog(null, "Please select a Language Tag");
 					//
@@ -235,7 +239,7 @@ public class OcrGui extends JFrame implements ActionListener {
 			//
 			File file = null;
 			//
-			if (jfc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+			if (!isHeadless && isNotUnderDebugOrTest && jfc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
 				//
 				file = jfc.getSelectedFile();
 				//
