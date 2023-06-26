@@ -6,9 +6,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Proxy;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.EventObject;
@@ -34,7 +36,10 @@ import javax.swing.text.JTextComponent;
 
 import org.apache.commons.collections4.IterableUtils;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.function.FailableConsumer;
+import org.apache.commons.lang3.function.FailableFunction;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.meeuw.functional.Predicates;
 
@@ -47,11 +52,11 @@ public class OcrGui extends JFrame implements ActionListener {
 
 	private static final long serialVersionUID = 6359603394039352706L;
 
-	private JTextComponent jtcFile, jtcText = null;
+	private JTextComponent jtcFile, jtcUrl, jtcText = null;
 
 	private transient ComboBoxModel<?> cbmLanaguageTag = null;
 
-	private AbstractButton abFile = null;
+	private AbstractButton abFile, abUrl = null;
 
 	private transient Ocr ocr = null;
 
@@ -95,6 +100,8 @@ public class OcrGui extends JFrame implements ActionListener {
 			//
 		} // if
 			//
+			// File
+			//
 		testAndAccept(predicate, new JLabel("File"), this::add);
 		//
 		if (isMigLayout) {
@@ -112,6 +119,24 @@ public class OcrGui extends JFrame implements ActionListener {
 		} // if
 			//
 		addActionListener(abFile, this);
+		//
+		// URL
+		//
+		testAndAccept(predicate, new JLabel("URL"), this::add);
+		//
+		if (isMigLayout) {
+			//
+			testAndAccept(biPredicate, this.jtcUrl = new JTextField(), "growx", this::add);
+			//
+		} // if
+			//
+		if (isMigLayout) {
+			//
+			testAndAccept(biPredicate, abUrl = new JButton("URL"), wrap, this::add);
+			//
+		} // if
+			//
+		addActionListener(abUrl, this);
 		//
 		testAndAccept(predicate, new JLabel("Text"), this::add);
 		//
@@ -209,7 +234,9 @@ public class OcrGui extends JFrame implements ActionListener {
 	@Override
 	public void actionPerformed(final ActionEvent evt) {
 		//
-		if (Objects.equals(getSource(evt), abFile)) {
+		final Object source = getSource(evt);
+		//
+		if (Objects.equals(source, abFile)) {
 			//
 			final String languageTag = toString(getSelectedItem(cbmLanaguageTag));
 			//
@@ -257,8 +284,37 @@ public class OcrGui extends JFrame implements ActionListener {
 				e.printStackTrace();
 			} // try
 				//
+		} else if (Objects.equals(source, abUrl)) {
+			//
+			final String languageTag = toString(getSelectedItem(cbmLanaguageTag));
+			//
+			try (final InputStream is = openStream(
+					testAndApply(StringUtils::isNotBlank, getText(jtcUrl), URL::new, null))) {
+				//
+				setText(jtcText, getOcrText(getOcr(), languageTag,
+						testAndApply(Objects::nonNull, is, IOUtils::toByteArray, null)));
+				//
+			} catch (final IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			//
 		} // if
 			//
+	}
+
+	private static InputStream openStream(final URL instance) throws IOException {
+		return instance != null ? instance.openStream() : null;
+	}
+
+	private static <T, R, E extends Throwable> R testAndApply(final Predicate<T> predicate, final T value,
+			final FailableFunction<T, R, E> functionTrue, final FailableFunction<T, R, E> functionFalse) throws E {
+		return predicate != null && predicate.test(value) ? apply(functionTrue, value) : apply(functionFalse, value);
+	}
+
+	private static <T, R, E extends Throwable> R apply(final FailableFunction<T, R, E> instance, final T value)
+			throws E {
+		return instance != null ? instance.apply(value) : null;
 	}
 
 	private static String getClassName(final StackTraceElement instance) {
@@ -279,6 +335,10 @@ public class OcrGui extends JFrame implements ActionListener {
 
 	private static String getAbsolutePath(final File instance) {
 		return instance != null ? instance.getAbsolutePath() : null;
+	}
+
+	private static String getText(final JTextComponent instance) {
+		return instance != null ? instance.getText() : null;
 	}
 
 	private static void setText(final JTextComponent instance, final String text) {

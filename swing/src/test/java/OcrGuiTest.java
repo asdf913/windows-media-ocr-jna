@@ -4,11 +4,13 @@ import java.awt.LayoutManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
+import java.net.URL;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -17,12 +19,15 @@ import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import javax.swing.AbstractButton;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JButton;
 import javax.swing.JTextField;
 import javax.swing.text.JTextComponent;
 
 import org.apache.commons.lang3.function.FailableConsumer;
+import org.apache.commons.lang3.function.FailableFunction;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -40,8 +45,8 @@ class OcrGuiTest {
 
 	private static Method METHOD_INIT, METHOD_GET_SELECTED_ITEM, METHOD_GET_OCR_TEXT, METHOD_GET_CLASS,
 			METHOD_TO_STRING, METHOD_GET_CLASS_NAME, METHOD_GET_ABSOLUTE_PATH, METHOD_SET_TEXT, METHOD_TEST_AND_ACCEPT3,
-			METHOD_TEST_AND_ACCEPT4, METHOD_STREAM, METHOD_FILTER, METHOD_TO_LIST, METHOD_GET_NAME,
-			METHOD_GET_LAYOUT = null;
+			METHOD_TEST_AND_ACCEPT4, METHOD_STREAM, METHOD_FILTER, METHOD_TO_LIST, METHOD_GET_NAME, METHOD_GET_LAYOUT,
+			METHOD_OPEN_STREAM, METHOD_TEST_AND_APPLY = null;
 
 	@BeforeAll
 	static void beforeAll() throws ReflectiveOperationException {
@@ -80,6 +85,11 @@ class OcrGuiTest {
 		(METHOD_GET_NAME = clz.getDeclaredMethod("getName", Member.class)).setAccessible(true);
 		//
 		(METHOD_GET_LAYOUT = clz.getDeclaredMethod("getLayout", Container.class)).setAccessible(true);
+		//
+		(METHOD_OPEN_STREAM = clz.getDeclaredMethod("openStream", URL.class)).setAccessible(true);
+		//
+		(METHOD_TEST_AND_APPLY = clz.getDeclaredMethod("testAndApply", Predicate.class, Object.class,
+				FailableFunction.class, FailableFunction.class)).setAccessible(true);
 		//
 	}
 
@@ -173,7 +183,7 @@ class OcrGuiTest {
 	}
 
 	@Test
-	void testActionPerformed() throws IllegalAccessException {
+	void testActionPerformed() throws Throwable {
 		//
 		Assertions.assertDoesNotThrow(() -> actionPerformed(instance, new ActionEvent("", 0, null)));
 		//
@@ -183,6 +193,24 @@ class OcrGuiTest {
 				true);
 		//
 		Assertions.assertDoesNotThrow(() -> actionPerformed(instance, null));
+		//
+		final AbstractButton abUrl = new JButton();
+		//
+		FieldUtils.writeDeclaredField(instance, "abUrl", abUrl, true);
+		//
+		final ActionEvent actionEvent = new ActionEvent(abUrl, 0, null);
+		//
+		Assertions.assertDoesNotThrow(() -> actionPerformed(instance, actionEvent));
+		//
+		final JTextComponent jtcUrl = new JTextField();
+		//
+		FieldUtils.writeDeclaredField(instance, "jtcUrl", jtcUrl, true);
+		//
+		Assertions.assertDoesNotThrow(() -> actionPerformed(instance, actionEvent));
+		//
+		setText(jtcUrl, " ");
+		//
+		Assertions.assertDoesNotThrow(() -> actionPerformed(instance, actionEvent));
 		//
 	}
 
@@ -212,7 +240,7 @@ class OcrGuiTest {
 		//
 		Assertions.assertNull(getOcrText(null, null, null));
 		//
-		Assertions.assertNull(getOcrText(Reflection.newProxy(Ocr.class, new IH()), null, null));
+		Assertions.assertNull(getOcrText(Reflection.newProxy(Ocr.class, ih), null, null));
 		//
 	}
 
@@ -487,6 +515,46 @@ class OcrGuiTest {
 				return (LayoutManager) obj;
 			}
 			throw new Throwable(toString(getClass(obj)));
+		} catch (final InvocationTargetException e) {
+			throw e.getTargetException();
+		}
+	}
+
+	@Test
+	void testOpenStream() throws Throwable {
+		//
+		Assertions.assertNotNull(openStream(new File(".").toURI().toURL()));
+		//
+	}
+
+	private static InputStream openStream(final URL instance) throws Throwable {
+		try {
+			final Object obj = METHOD_OPEN_STREAM.invoke(null, instance);
+			if (obj == null) {
+				return null;
+			} else if (obj instanceof InputStream) {
+				return (InputStream) obj;
+			}
+			throw new Throwable(toString(getClass(obj)));
+		} catch (final InvocationTargetException e) {
+			throw e.getTargetException();
+		}
+	}
+
+	@Test
+	void testTestAndApply() throws Throwable {
+		//
+		Assertions.assertNull(testAndApply(null, null, null, x -> null));
+		//
+		Assertions.assertNull(testAndApply(Predicates.alwaysTrue(), null, null, null));
+		//
+	}
+
+	private static <T, R, E extends Throwable> R testAndApply(final Predicate<T> predicate, final T value,
+			final FailableFunction<T, R, E> functionTrue, final FailableFunction<T, R, E> functionFalse)
+			throws Throwable {
+		try {
+			return (R) METHOD_TEST_AND_APPLY.invoke(null, predicate, value, functionTrue, functionFalse);
 		} catch (final InvocationTargetException e) {
 			throw e.getTargetException();
 		}
