@@ -3,6 +3,8 @@ import java.awt.GraphicsEnvironment;
 import java.awt.LayoutManager;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.ClipboardOwner;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -57,7 +59,7 @@ class OcrGuiTest {
 			METHOD_TEST_AND_ACCEPT4, METHOD_STREAM, METHOD_FILTER, METHOD_TO_LIST, METHOD_GET_NAME_MEMBER,
 			METHOD_GET_NAME_CLASS, METHOD_GET_LAYOUT, METHOD_OPEN_STREAM, METHOD_TEST_AND_APPLY,
 			METHOD_CREATE_PROPERTIES, METHOD_ERROR_OR_PRINT_STACK_TRACE, METHOD_ADD_ACTION_LISTENER,
-			METHOD_GET_SYSTEM_CLIP_BOARD = null;
+			METHOD_GET_SYSTEM_CLIP_BOARD, METHOD_SET_CONTENTS = null;
 
 	@BeforeAll
 	static void beforeAll() throws ReflectiveOperationException {
@@ -113,6 +115,9 @@ class OcrGuiTest {
 				AbstractButton.class, AbstractButton.class, AbstractButton[].class)).setAccessible(true);
 		//
 		(METHOD_GET_SYSTEM_CLIP_BOARD = clz.getDeclaredMethod("getSystemClipboard", Toolkit.class)).setAccessible(true);
+		//
+		(METHOD_SET_CONTENTS = clz.getDeclaredMethod("setContents", Clipboard.class, Transferable.class,
+				ClipboardOwner.class)).setAccessible(true);
 		//
 	}
 
@@ -769,6 +774,24 @@ class OcrGuiTest {
 				return (Clipboard) obj;
 			}
 			throw new Throwable(toString(getClass(obj)));
+		} catch (final InvocationTargetException e) {
+			throw e.getTargetException();
+		}
+	}
+
+	@Test
+	void testSetContents() throws Throwable {
+		//
+		Assertions.assertDoesNotThrow(() -> setContents(null, null, null));
+		//
+		Assertions.assertDoesNotThrow(() -> setContents(new Clipboard(null), null, null));
+		//
+	}
+
+	private static void setContents(final Clipboard instance, final Transferable contents, final ClipboardOwner owner)
+			throws Throwable {
+		try {
+			METHOD_SET_CONTENTS.invoke(null, instance, contents, owner);
 		} catch (final InvocationTargetException e) {
 			throw e.getTargetException();
 		}

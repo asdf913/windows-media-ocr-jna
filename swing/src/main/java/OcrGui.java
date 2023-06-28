@@ -4,7 +4,9 @@ import java.awt.GraphicsEnvironment;
 import java.awt.LayoutManager;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -389,20 +391,24 @@ public class OcrGui extends JFrame implements ActionListener {
 				//
 			} // if
 				//
-			final Clipboard clipboard = getSystemClipboard(toolkit);
-			//
-			if (clipboard != null && Arrays.stream(new Throwable().getStackTrace())
+			if (Arrays.stream(new Throwable().getStackTrace())
 					.noneMatch(x -> Arrays
 							.asList("org.eclipse.jdt.internal.junit5.runner.JUnit5TestReference",
 									"org.apache.maven.surefire.junitplatform.JUnitPlatformProvider")
 							.contains(getClassName(x)))) {
 				//
-				clipboard.setContents(new StringSelection(getText(jtcText)), null);
+				setContents(getSystemClipboard(toolkit), new StringSelection(getText(jtcText)), null);
 				//
 			} // if
 				//
 		} // if
 			//
+	}
+
+	private static void setContents(final Clipboard instance, final Transferable contents, final ClipboardOwner owner) {
+		if (instance != null) {
+			instance.setContents(contents, owner);
+		}
 	}
 
 	private static Clipboard getSystemClipboard(final Toolkit instance) {
