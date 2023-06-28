@@ -368,25 +368,31 @@ public class OcrGui extends JFrame implements ActionListener {
 				//
 		} else if (Objects.equals(source, abUrl)) {
 			//
-			final String languageTag = toString(getSelectedItem(cbmLanaguageTag));
+			actionPerformedAbUrl();
 			//
-			try (final InputStream is = openStream(
-					testAndApply(StringUtils::isNotBlank, getText(jtcUrl), URL::new, null))) {
-				//
-				setText(jtcText, getOcrText(getOcr(), languageTag,
-						testAndApply(Objects::nonNull, is, IOUtils::toByteArray, null)));
-				//
-			} catch (final IOException e) {
-				//
-				errorOrPrintStackTrace(LOG, e);
-				//
-			} // try
-				//
 		} else if (Objects.equals(source, abCopyText)) {
 			//
 			actionPerformedAbCopyText();
 			//
 		} // if
+			//
+	}
+
+	private void actionPerformedAbUrl() {
+		//
+		final String languageTag = toString(getSelectedItem(cbmLanaguageTag));
+		//
+		try (final InputStream is = openStream(
+				testAndApply(StringUtils::isNotBlank, getText(jtcUrl), URL::new, null))) {
+			//
+			setText(jtcText,
+					getOcrText(getOcr(), languageTag, testAndApply(Objects::nonNull, is, IOUtils::toByteArray, null)));
+			//
+		} catch (final IOException e) {
+			//
+			errorOrPrintStackTrace(LOG, e);
+			//
+		} // try
 			//
 	}
 
