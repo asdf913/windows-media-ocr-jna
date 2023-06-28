@@ -520,7 +520,7 @@ public class OcrGui extends JFrame implements ActionListener {
 				// instructions
 				//
 			if (Objects.equals(Arrays.asList(NEW.class, DUP.class, INVOKESPECIAL.class, ATHROW.class),
-					toList(map(testAndApply(Objects::nonNull, ins, Arrays::stream, null), x -> getClass(x))))) {
+					toList(map(testAndApply(Objects::nonNull, ins, Arrays::stream, null), OcrGui::getClass)))) {
 				//
 				final Class<?> c = forName(className);
 				//
