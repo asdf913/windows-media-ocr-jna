@@ -58,7 +58,7 @@ class OcrGuiTest {
 			METHOD_TO_STRING, METHOD_GET_CLASS_NAME, METHOD_GET_ABSOLUTE_PATH, METHOD_SET_TEXT, METHOD_TEST_AND_ACCEPT3,
 			METHOD_TEST_AND_ACCEPT4, METHOD_STREAM, METHOD_FILTER, METHOD_TO_LIST, METHOD_GET_NAME_MEMBER,
 			METHOD_GET_NAME_CLASS, METHOD_GET_LAYOUT, METHOD_OPEN_STREAM, METHOD_TEST_AND_APPLY,
-			METHOD_CREATE_PROPERTIES, METHOD_ERROR_OR_PRINT_STACK_TRACE, METHOD_ADD_ACTION_LISTENER,
+			METHOD_CREATE_PROPERTIES, METHOD_SHOW_EXCEPTION_ERROR_OR_PRINT_STACK_TRACE, METHOD_ADD_ACTION_LISTENER,
 			METHOD_GET_SYSTEM_CLIP_BOARD, METHOD_SET_CONTENTS = null;
 
 	@BeforeAll
@@ -108,8 +108,9 @@ class OcrGuiTest {
 		//
 		(METHOD_CREATE_PROPERTIES = clz.getDeclaredMethod("createProperties", File.class)).setAccessible(true);
 		//
-		(METHOD_ERROR_OR_PRINT_STACK_TRACE = clz.getDeclaredMethod("errorOrPrintStackTrace", Logger.class,
-				Throwable.class)).setAccessible(true);
+		(METHOD_SHOW_EXCEPTION_ERROR_OR_PRINT_STACK_TRACE = clz
+				.getDeclaredMethod("showExceptionOrErrorOrPrintStackTrace", Logger.class, Throwable.class))
+				.setAccessible(true);
 		//
 		(METHOD_ADD_ACTION_LISTENER = clz.getDeclaredMethod("addActionListener", ActionListener.class,
 				AbstractButton.class, AbstractButton.class, AbstractButton[].class)).setAccessible(true);
@@ -694,21 +695,23 @@ class OcrGuiTest {
 	}
 
 	@Test
-	void testErrorOrPrintStackTrace() {
+	void testShowExceptionOrErrorOrPrintStackTrace() {
 		//
-		Assertions.assertDoesNotThrow(() -> errorOrPrintStackTrace(null, null));
+		Assertions.assertDoesNotThrow(() -> showExceptionOrErrorOrPrintStackTrace(null, null));
 		//
-		Assertions.assertDoesNotThrow(() -> errorOrPrintStackTrace(Reflection.newProxy(Logger.class, ih), null));
+		Assertions.assertDoesNotThrow(
+				() -> showExceptionOrErrorOrPrintStackTrace(Reflection.newProxy(Logger.class, ih), null));
 		//
 		final Throwable throwable = new Throwable();
 		//
-		Assertions.assertDoesNotThrow(() -> errorOrPrintStackTrace(null, throwable));
+		Assertions.assertDoesNotThrow(() -> showExceptionOrErrorOrPrintStackTrace(null, throwable));
 		//
 	}
 
-	private static void errorOrPrintStackTrace(final Logger logger, final Throwable throwable) throws Throwable {
+	private static void showExceptionOrErrorOrPrintStackTrace(final Logger logger, final Throwable throwable)
+			throws Throwable {
 		try {
-			METHOD_ERROR_OR_PRINT_STACK_TRACE.invoke(null, logger, throwable);
+			METHOD_SHOW_EXCEPTION_ERROR_OR_PRINT_STACK_TRACE.invoke(null, logger, throwable);
 		} catch (final InvocationTargetException e) {
 			throw e.getTargetException();
 		}

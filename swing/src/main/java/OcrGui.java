@@ -52,6 +52,7 @@ import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.meeuw.functional.Predicates;
+import org.oxbow.swingbits.dialog.task.TaskDialogs;
 
 import io.github.toolfactory.narcissus.Narcissus;
 import net.miginfocom.swing.MigLayout;
@@ -293,7 +294,7 @@ public class OcrGui extends JFrame implements ActionListener {
 				//
 		} catch (final IOException e) {
 			//
-			errorOrPrintStackTrace(LOG, e);
+			showExceptionOrErrorOrPrintStackTrace(LOG, e);
 			//
 		} // try
 			//
@@ -301,8 +302,34 @@ public class OcrGui extends JFrame implements ActionListener {
 		//
 	}
 
-	private static void errorOrPrintStackTrace(final Logger logger, final Throwable throwable) {
+	private static void showExceptionOrErrorOrPrintStackTrace(final Logger logger, final Throwable throwable) {
 		//
+		if (!GraphicsEnvironment.isHeadless() && throwable != null) {
+			//
+			if (throwable.getMessage() == null) {
+				//
+				try {
+					//
+					Narcissus.setObjectField(throwable, Throwable.class.getDeclaredField("detailMessage"), "");
+					//
+				} catch (final NoSuchFieldException e) {
+					//
+					showExceptionOrErrorOrPrintStackTrace(logger, e);
+					//
+				} // try
+					//
+			} // if
+				//
+			if (!isUnderDebugOrMaven()) {
+				//
+				TaskDialogs.showException(throwable);
+				//
+				return;
+				//
+			} // if
+				//
+		} // if
+			//
 		if (logger != null) {
 			//
 			logger.error(throwable);
@@ -325,11 +352,7 @@ public class OcrGui extends JFrame implements ActionListener {
 			final String languageTag = toString(getSelectedItem(cbmLanaguageTag));
 			//
 			final boolean isNotHeadLessAndisNotUnderDebugOrTest = !GraphicsEnvironment.isHeadless()
-					&& Arrays.stream(new Throwable().getStackTrace())
-							.noneMatch(x -> Arrays
-									.asList("org.eclipse.jdt.internal.junit5.runner.JUnit5TestReference",
-											"org.apache.maven.surefire.junitplatform.JUnitPlatformProvider")
-									.contains(getClassName(x)));
+					&& !isUnderDebugOrMaven();
 			//
 			if (languageTag == null) {
 				//
@@ -362,7 +385,7 @@ public class OcrGui extends JFrame implements ActionListener {
 				//
 			} catch (final IOException e) {
 				//
-				errorOrPrintStackTrace(LOG, e);
+				showExceptionOrErrorOrPrintStackTrace(LOG, e);
 				//
 			} // try
 				//
@@ -378,6 +401,16 @@ public class OcrGui extends JFrame implements ActionListener {
 			//
 	}
 
+	private static boolean isUnderDebugOrMaven() {
+		//
+		return Arrays.stream(new Throwable().getStackTrace())
+				.anyMatch(x -> Arrays
+						.asList("org.eclipse.jdt.internal.junit5.runner.JUnit5TestReference",
+								"org.apache.maven.surefire.junitplatform.JUnitPlatformProvider")
+						.contains(getClassName(x)));
+		//
+	}
+
 	private void actionPerformedAbUrl() {
 		//
 		final String languageTag = toString(getSelectedItem(cbmLanaguageTag));
@@ -390,7 +423,7 @@ public class OcrGui extends JFrame implements ActionListener {
 			//
 		} catch (final IOException e) {
 			//
-			errorOrPrintStackTrace(LOG, e);
+			showExceptionOrErrorOrPrintStackTrace(LOG, e);
 			//
 		} // try
 			//
@@ -406,11 +439,7 @@ public class OcrGui extends JFrame implements ActionListener {
 			//
 		} // if
 			//
-		if (Arrays.stream(new Throwable().getStackTrace())
-				.noneMatch(x -> Arrays
-						.asList("org.eclipse.jdt.internal.junit5.runner.JUnit5TestReference",
-								"org.apache.maven.surefire.junitplatform.JUnitPlatformProvider")
-						.contains(getClassName(x)))) {
+		if (!isUnderDebugOrMaven()) {
 			//
 			setContents(getSystemClipboard(toolkit), new StringSelection(getText(jtcText)), null);
 			//
