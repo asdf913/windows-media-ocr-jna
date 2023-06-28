@@ -383,24 +383,30 @@ public class OcrGui extends JFrame implements ActionListener {
 				//
 		} else if (Objects.equals(source, abCopyText)) {
 			//
-			final Toolkit toolkit = Toolkit.getDefaultToolkit();
+			actionPerformedAbCopyText();
 			//
-			if (Objects.equals("sun.awt.HeadlessToolkit", getName(getClass(toolkit)))) {
-				//
-				return;
-				//
-			} // if
-				//
-			if (Arrays.stream(new Throwable().getStackTrace())
-					.noneMatch(x -> Arrays
-							.asList("org.eclipse.jdt.internal.junit5.runner.JUnit5TestReference",
-									"org.apache.maven.surefire.junitplatform.JUnitPlatformProvider")
-							.contains(getClassName(x)))) {
-				//
-				setContents(getSystemClipboard(toolkit), new StringSelection(getText(jtcText)), null);
-				//
-			} // if
-				//
+		} // if
+			//
+	}
+
+	private void actionPerformedAbCopyText() {
+		//
+		final Toolkit toolkit = Toolkit.getDefaultToolkit();
+		//
+		if (Objects.equals("sun.awt.HeadlessToolkit", getName(getClass(toolkit)))) {
+			//
+			return;
+			//
+		} // if
+			//
+		if (Arrays.stream(new Throwable().getStackTrace())
+				.noneMatch(x -> Arrays
+						.asList("org.eclipse.jdt.internal.junit5.runner.JUnit5TestReference",
+								"org.apache.maven.surefire.junitplatform.JUnitPlatformProvider")
+						.contains(getClassName(x)))) {
+			//
+			setContents(getSystemClipboard(toolkit), new StringSelection(getText(jtcText)), null);
+			//
 		} // if
 			//
 	}
