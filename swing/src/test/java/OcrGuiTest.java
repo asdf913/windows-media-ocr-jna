@@ -16,6 +16,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Properties;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
@@ -48,7 +49,7 @@ class OcrGuiTest {
 	private static Method METHOD_INIT, METHOD_GET_SELECTED_ITEM, METHOD_GET_OCR_TEXT, METHOD_GET_CLASS,
 			METHOD_TO_STRING, METHOD_GET_CLASS_NAME, METHOD_GET_ABSOLUTE_PATH, METHOD_SET_TEXT, METHOD_TEST_AND_ACCEPT3,
 			METHOD_TEST_AND_ACCEPT4, METHOD_STREAM, METHOD_FILTER, METHOD_TO_LIST, METHOD_GET_NAME, METHOD_GET_LAYOUT,
-			METHOD_OPEN_STREAM, METHOD_TEST_AND_APPLY = null;
+			METHOD_OPEN_STREAM, METHOD_TEST_AND_APPLY, METHOD_CREATE_PROPERTIES = null;
 
 	@BeforeAll
 	static void beforeAll() throws ReflectiveOperationException {
@@ -92,6 +93,8 @@ class OcrGuiTest {
 		//
 		(METHOD_TEST_AND_APPLY = clz.getDeclaredMethod("testAndApply", Predicate.class, Object.class,
 				FailableFunction.class, FailableFunction.class)).setAccessible(true);
+		//
+		(METHOD_CREATE_PROPERTIES = clz.getDeclaredMethod("createProperties", File.class)).setAccessible(true);
 		//
 	}
 
@@ -565,6 +568,49 @@ class OcrGuiTest {
 			throws Throwable {
 		try {
 			return (R) METHOD_TEST_AND_APPLY.invoke(null, predicate, value, functionTrue, functionFalse);
+		} catch (final InvocationTargetException e) {
+			throw e.getTargetException();
+		}
+	}
+
+	@Test
+	void testCreateProperties() throws Throwable {
+		//
+		Assertions.assertNull(createProperties(null));
+		//
+		File file = new File(".");
+		//
+		if (!file.isFile()) {
+			//
+			Assertions.assertNull(createProperties(file));
+			//
+		} else {
+			//
+			Assertions.assertNotNull(createProperties(file));
+			//
+		} // if
+			//
+		if (!(file = new File("pom.xml")).isFile()) {
+			//
+			Assertions.assertNull(createProperties(file));
+			//
+		} else {
+			//
+			Assertions.assertNotNull(createProperties(file));
+			//
+		} // if
+			//
+	}
+
+	private static Properties createProperties(final File file) throws Throwable {
+		try {
+			final Object obj = METHOD_CREATE_PROPERTIES.invoke(null, file);
+			if (obj == null) {
+				return null;
+			} else if (obj instanceof Properties) {
+				return (Properties) obj;
+			}
+			throw new Throwable(toString(getClass(obj)));
 		} catch (final InvocationTargetException e) {
 			throw e.getTargetException();
 		}

@@ -105,8 +105,7 @@ public class OcrGui extends JFrame implements ActionListener {
 			//
 		} // if
 			//
-		testAndAccept(x -> containsKey(map, x), "languageTag",
-				x -> dcbm.setSelectedItem(get(map, "languageTag")));
+		testAndAccept(x -> containsKey(map, x), "languageTag", x -> dcbm.setSelectedItem(get(map, "languageTag")));
 		//
 		// File
 		//
@@ -137,8 +136,7 @@ public class OcrGui extends JFrame implements ActionListener {
 		//
 		if (isMigLayout) {
 			//
-			testAndAccept(biPredicate, this.jtcUrl = new JTextField(toString(get(map, "url"))), growx,
-					this::add);
+			testAndAccept(biPredicate, this.jtcUrl = new JTextField(toString(get(map, "url"))), growx, this::add);
 			//
 		} // if
 			//
@@ -243,9 +241,17 @@ public class OcrGui extends JFrame implements ActionListener {
 		//
 		instance.setLayout(new MigLayout());
 		//
-		Properties properties = null;
+		instance.init(createProperties(new File("OcrGui.properties")));
 		//
-		final File file = new File("OcrGui.properties");
+		instance.pack();
+		//
+		instance.setVisible(true);
+		//
+	}
+
+	private static Properties createProperties(final File file) {
+		//
+		Properties properties = null;
 		//
 		try (final InputStream is = testAndApply(f -> f != null && f.exists() && f.isFile() && f.canRead(), file,
 				FileInputStream::new, null)) {
@@ -261,11 +267,7 @@ public class OcrGui extends JFrame implements ActionListener {
 			e.printStackTrace();
 		} // try
 			//
-		instance.init(properties);
-		//
-		instance.pack();
-		//
-		instance.setVisible(true);
+		return properties;
 		//
 	}
 
