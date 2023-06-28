@@ -32,6 +32,7 @@ import javax.swing.text.JTextComponent;
 import org.apache.commons.lang3.function.FailableConsumer;
 import org.apache.commons.lang3.function.FailableFunction;
 import org.apache.commons.lang3.reflect.FieldUtils;
+import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,7 +50,8 @@ class OcrGuiTest {
 	private static Method METHOD_INIT, METHOD_GET_SELECTED_ITEM, METHOD_GET_OCR_TEXT, METHOD_GET_CLASS,
 			METHOD_TO_STRING, METHOD_GET_CLASS_NAME, METHOD_GET_ABSOLUTE_PATH, METHOD_SET_TEXT, METHOD_TEST_AND_ACCEPT3,
 			METHOD_TEST_AND_ACCEPT4, METHOD_STREAM, METHOD_FILTER, METHOD_TO_LIST, METHOD_GET_NAME, METHOD_GET_LAYOUT,
-			METHOD_OPEN_STREAM, METHOD_TEST_AND_APPLY, METHOD_CREATE_PROPERTIES = null;
+			METHOD_OPEN_STREAM, METHOD_TEST_AND_APPLY, METHOD_CREATE_PROPERTIES,
+			METHOD_ERROR_OR_PRINT_STACK_TRACE = null;
 
 	@BeforeAll
 	static void beforeAll() throws ReflectiveOperationException {
@@ -96,6 +98,9 @@ class OcrGuiTest {
 		//
 		(METHOD_CREATE_PROPERTIES = clz.getDeclaredMethod("createProperties", File.class)).setAccessible(true);
 		//
+		(METHOD_ERROR_OR_PRINT_STACK_TRACE = clz.getDeclaredMethod("errorOrPrintStackTrace", Logger.class,
+				Throwable.class)).setAccessible(true);
+		//
 	}
 
 	private static class IH implements InvocationHandler {
@@ -120,6 +125,14 @@ class OcrGuiTest {
 				if (Objects.equals(methodName, "filter")) {
 					//
 					return proxy;
+					//
+				} // if
+					//
+			} else if (proxy instanceof Logger) {
+				//
+				if (Objects.equals(methodName, "error")) {
+					//
+					return null;
 					//
 				} // if
 					//
@@ -611,6 +624,27 @@ class OcrGuiTest {
 				return (Properties) obj;
 			}
 			throw new Throwable(toString(getClass(obj)));
+		} catch (final InvocationTargetException e) {
+			throw e.getTargetException();
+		}
+	}
+
+	@Test
+	void testErrorOrPrintStackTrace() {
+		//
+		Assertions.assertDoesNotThrow(() -> errorOrPrintStackTrace(null, null));
+		//
+		Assertions.assertDoesNotThrow(() -> errorOrPrintStackTrace(Reflection.newProxy(Logger.class, ih), null));
+		//
+		final Throwable throwable = new Throwable();
+		//
+		Assertions.assertDoesNotThrow(() -> errorOrPrintStackTrace(null, throwable));
+		//
+	}
+
+	private static void errorOrPrintStackTrace(final Logger logger, final Throwable throwable) throws Throwable {
+		try {
+			METHOD_ERROR_OR_PRINT_STACK_TRACE.invoke(null, logger, throwable);
 		} catch (final InvocationTargetException e) {
 			throw e.getTargetException();
 		}

@@ -44,6 +44,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.function.FailableConsumer;
 import org.apache.commons.lang3.function.FailableFunction;
 import org.apache.commons.lang3.reflect.FieldUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.meeuw.functional.Predicates;
 
 import io.github.toolfactory.narcissus.Narcissus;
@@ -54,6 +56,8 @@ import ocr.OcrImpl;
 public class OcrGui extends JFrame implements ActionListener {
 
 	private static final long serialVersionUID = 6359603394039352706L;
+
+	private static final Logger LOG = LogManager.getLogger(OcrGui.class);
 
 	private JTextComponent jtcFile, jtcUrl, jtcText = null;
 
@@ -263,12 +267,27 @@ public class OcrGui extends JFrame implements ActionListener {
 			} // if
 				//
 		} catch (final IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			//
+			errorOrPrintStackTrace(LOG, e);
+			//
 		} // try
 			//
 		return properties;
 		//
+	}
+
+	private static void errorOrPrintStackTrace(final Logger logger, final Throwable throwable) {
+		//
+		if (logger != null) {
+			//
+			logger.error(throwable);
+			//
+		} else if (throwable != null) {
+			//
+			throwable.printStackTrace();
+			//
+		} // if
+			//
 	}
 
 	@Override
@@ -317,8 +336,9 @@ public class OcrGui extends JFrame implements ActionListener {
 						testAndApply(Objects::nonNull, file, FileUtils::readFileToByteArray, null)));
 				//
 			} catch (final IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				//
+				errorOrPrintStackTrace(LOG, e);
+				//
 			} // try
 				//
 		} else if (Objects.equals(source, abUrl)) {
@@ -332,10 +352,11 @@ public class OcrGui extends JFrame implements ActionListener {
 						testAndApply(Objects::nonNull, is, IOUtils::toByteArray, null)));
 				//
 			} catch (final IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			//
+				//
+				errorOrPrintStackTrace(LOG, e);
+				//
+			} // try
+				//
 		} // if
 			//
 	}
