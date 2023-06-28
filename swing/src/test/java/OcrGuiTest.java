@@ -34,6 +34,9 @@ import javax.swing.JButton;
 import javax.swing.JTextField;
 import javax.swing.text.JTextComponent;
 
+import org.apache.bcel.classfile.ClassParser;
+import org.apache.bcel.classfile.JavaClass;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.function.FailableConsumer;
 import org.apache.commons.lang3.function.FailableFunction;
 import org.apache.commons.lang3.reflect.FieldUtils;
@@ -61,7 +64,7 @@ class OcrGuiTest {
 			METHOD_GET_NAME_CLASS, METHOD_GET_LAYOUT, METHOD_OPEN_STREAM, METHOD_TEST_AND_APPLY,
 			METHOD_CREATE_PROPERTIES, METHOD_SHOW_EXCEPTION_ERROR_OR_PRINT_STACK_TRACE, METHOD_ADD_ACTION_LISTENER,
 			METHOD_GET_SYSTEM_CLIP_BOARD, METHOD_SET_CONTENTS, METHOD_IS_RAISE_THROWABLE_ONLY, METHOD_MAP,
-			METHOD_FOR_NAME, METHOD_GET_RESOURCE_AS_STREAM = null;
+			METHOD_FOR_NAME, METHOD_GET_RESOURCE_AS_STREAM, METHOD_PARSE, METHOD_GET_METHOD = null;
 
 	@BeforeAll
 	static void beforeAll() throws ReflectiveOperationException {
@@ -131,6 +134,10 @@ class OcrGuiTest {
 		//
 		(METHOD_GET_RESOURCE_AS_STREAM = clz.getDeclaredMethod("getResourceAsStream", Class.class, String.class))
 				.setAccessible(true);
+		//
+		(METHOD_PARSE = clz.getDeclaredMethod("parse", ClassParser.class)).setAccessible(true);
+		//
+		(METHOD_GET_METHOD = clz.getDeclaredMethod("getMethod", JavaClass.class, Method.class)).setAccessible(true);
 		//
 	}
 
@@ -902,6 +909,50 @@ class OcrGuiTest {
 				return null;
 			} else if (obj instanceof InputStream) {
 				return (InputStream) obj;
+			}
+			throw new Throwable(toString(getClass(obj)));
+		} catch (final InvocationTargetException e) {
+			throw e.getTargetException();
+		}
+	}
+
+	@Test
+	void testGetMethod() throws Throwable {
+		//
+		final Class<?> clz = String.class;
+		//
+		try (final InputStream is = getResourceAsStream(clz,
+				String.format("/%1$s.class", StringUtils.replace(getName(clz), ".", "/")))) {
+			//
+			Assertions.assertNull(
+					getMethod(parse(testAndApply(Objects::nonNull, is, x -> new ClassParser(x, null), null)), null));
+			//
+		} // try
+			//
+	}
+
+	private static JavaClass parse(final ClassParser instance) throws Throwable {
+		try {
+			final Object obj = METHOD_PARSE.invoke(null, instance);
+			if (obj == null) {
+				return null;
+			} else if (obj instanceof JavaClass) {
+				return (JavaClass) obj;
+			}
+			throw new Throwable(toString(getClass(obj)));
+		} catch (final InvocationTargetException e) {
+			throw e.getTargetException();
+		}
+	}
+
+	private static org.apache.bcel.classfile.Method getMethod(final JavaClass instance, final Method method)
+			throws Throwable {
+		try {
+			final Object obj = METHOD_GET_METHOD.invoke(null, instance, method);
+			if (obj == null) {
+				return null;
+			} else if (obj instanceof org.apache.bcel.classfile.Method) {
+				return (org.apache.bcel.classfile.Method) obj;
 			}
 			throw new Throwable(toString(getClass(obj)));
 		} catch (final InvocationTargetException e) {

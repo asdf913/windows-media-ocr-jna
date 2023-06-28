@@ -493,9 +493,8 @@ public class OcrGui extends JFrame implements ActionListener {
 		try (final InputStream is = getResourceAsStream(clz,
 				String.format("/%1$s.class", StringUtils.replace(getName(clz), ".", "/")))) {
 			//
-			final JavaClass javaClass = parse(testAndApply(Objects::nonNull, is, x -> new ClassParser(x, null), null));
-			//
-			final org.apache.bcel.classfile.Method m = javaClass != null ? javaClass.getMethod(method) : null;
+			final org.apache.bcel.classfile.Method m = getMethod(
+					parse(testAndApply(Objects::nonNull, is, x -> new ClassParser(x, null), null)), method);
 			//
 			final MethodGen mg = testAndApply(Objects::nonNull, m, x -> new MethodGen(x, null, null), null);
 			//
@@ -556,6 +555,10 @@ public class OcrGui extends JFrame implements ActionListener {
 			//
 		return false;
 		//
+	}
+
+	private static org.apache.bcel.classfile.Method getMethod(final JavaClass instance, final Method method) {
+		return instance != null && method != null ? instance.getMethod(method) : null;
 	}
 
 	private static InputStream getResourceAsStream(final Class<?> instance, final String name) {
