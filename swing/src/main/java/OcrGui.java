@@ -133,7 +133,7 @@ public class OcrGui extends JFrame implements ActionListener {
 		//
 		if (isMigLayout) {
 			//
-			testAndAccept(biPredicate, abFile = new JButton("File"), wrap, this::add);
+			testAndAccept(biPredicate, abFile = new JButton("File"), String.join(",", wrap, growx), this::add);
 			//
 		} // if
 			//
@@ -149,7 +149,7 @@ public class OcrGui extends JFrame implements ActionListener {
 			//
 		if (isMigLayout) {
 			//
-			testAndAccept(biPredicate, abUrl = new JButton("URL"), wrap, this::add);
+			testAndAccept(biPredicate, abUrl = new JButton("URL"), String.join(",", wrap, growx), this::add);
 			//
 		} // if
 			//
@@ -165,12 +165,13 @@ public class OcrGui extends JFrame implements ActionListener {
 		//
 		if (isMigLayout) {
 			//
-			testAndAccept(biPredicate, abCopyText = new JButton("Copy"), wrap, this::add);
+			testAndAccept(biPredicate, abCopyText = new JButton("Copy"), String.join(",", wrap, growx), this::add);
 			//
 		} // if
 			//
 		addActionListener(this, abFile, abUrl, abCopyText);
 		//
+
 	}
 
 	private static boolean containsKey(final Map<?, ?> instance, final Object key) {
