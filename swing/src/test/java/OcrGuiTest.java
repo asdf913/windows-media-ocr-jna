@@ -1,6 +1,8 @@
 import java.awt.Container;
 import java.awt.GraphicsEnvironment;
 import java.awt.LayoutManager;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -42,6 +44,9 @@ import com.google.common.base.Predicates;
 import com.google.common.reflect.Reflection;
 
 import io.github.toolfactory.narcissus.Narcissus;
+import javassist.util.proxy.MethodHandler;
+import javassist.util.proxy.ProxyFactory;
+import javassist.util.proxy.ProxyObject;
 import net.miginfocom.swing.MigLayout;
 import ocr.Ocr;
 
@@ -51,7 +56,8 @@ class OcrGuiTest {
 			METHOD_TO_STRING, METHOD_GET_CLASS_NAME, METHOD_GET_ABSOLUTE_PATH, METHOD_SET_TEXT, METHOD_TEST_AND_ACCEPT3,
 			METHOD_TEST_AND_ACCEPT4, METHOD_STREAM, METHOD_FILTER, METHOD_TO_LIST, METHOD_GET_NAME_MEMBER,
 			METHOD_GET_NAME_CLASS, METHOD_GET_LAYOUT, METHOD_OPEN_STREAM, METHOD_TEST_AND_APPLY,
-			METHOD_CREATE_PROPERTIES, METHOD_ERROR_OR_PRINT_STACK_TRACE, METHOD_ADD_ACTION_LISTENER = null;
+			METHOD_CREATE_PROPERTIES, METHOD_ERROR_OR_PRINT_STACK_TRACE, METHOD_ADD_ACTION_LISTENER,
+			METHOD_GET_SYSTEM_CLIP_BOARD = null;
 
 	@BeforeAll
 	static void beforeAll() throws ReflectiveOperationException {
@@ -106,6 +112,8 @@ class OcrGuiTest {
 		(METHOD_ADD_ACTION_LISTENER = clz.getDeclaredMethod("addActionListener", ActionListener.class,
 				AbstractButton.class, AbstractButton.class, AbstractButton[].class)).setAccessible(true);
 		//
+		(METHOD_GET_SYSTEM_CLIP_BOARD = clz.getDeclaredMethod("getSystemClipboard", Toolkit.class)).setAccessible(true);
+		//
 	}
 
 	private static class IH implements InvocationHandler {
@@ -136,6 +144,30 @@ class OcrGuiTest {
 			} else if (proxy instanceof Logger) {
 				//
 				if (Objects.equals(methodName, "error")) {
+					//
+					return null;
+					//
+				} // if
+					//
+			} // if
+				//
+			throw new Throwable(methodName);
+			//
+		}
+
+	}
+
+	private static class MH implements MethodHandler {
+
+		@Override
+		public Object invoke(final Object self, final Method thisMethod, final Method proceed, final Object[] args)
+				throws Throwable {
+			//
+			final String methodName = getName(thisMethod);
+			//
+			if (self instanceof Toolkit) {
+				//
+				if (Objects.equals(methodName, "getSystemClipboard")) {
 					//
 					return null;
 					//
@@ -688,6 +720,55 @@ class OcrGuiTest {
 			final AbstractButton b, final AbstractButton... abs) throws Throwable {
 		try {
 			METHOD_ADD_ACTION_LISTENER.invoke(null, actionListener, a, b, abs);
+		} catch (final InvocationTargetException e) {
+			throw e.getTargetException();
+		}
+	}
+
+	@Test
+	void testGetSystemClipboard() throws Throwable {
+		//
+		Assertions.assertNull(getSystemClipboard(null));
+		//
+		if (GraphicsEnvironment.isHeadless()) {
+			//
+			Assertions.assertNull(getSystemClipboard(createProxy(Toolkit.class, new MH())));
+			//
+		} // if
+			//
+	}
+
+	private static <T> T createProxy(final Class<T> superClass, final MethodHandler mh) throws Throwable {
+		//
+		final ProxyFactory proxyFactory = new ProxyFactory();
+		//
+		proxyFactory.setSuperclass(superClass);
+		//
+		final Class<?> clz = proxyFactory.createClass();
+		//
+		final Constructor<?> constructor = clz != null ? clz.getDeclaredConstructor() : null;
+		//
+		final Object instance = constructor != null ? constructor.newInstance() : null;
+		//
+		if (instance instanceof ProxyObject) {
+			//
+			((ProxyObject) instance).setHandler(mh);
+			//
+		} // if
+			//
+		return (T) cast(clz, instance);
+		//
+	}
+
+	private static Clipboard getSystemClipboard(final Toolkit instance) throws Throwable {
+		try {
+			final Object obj = METHOD_GET_SYSTEM_CLIP_BOARD.invoke(null, instance);
+			if (obj == null) {
+				return null;
+			} else if (obj instanceof Clipboard) {
+				return (Clipboard) obj;
+			}
+			throw new Throwable(toString(getClass(obj)));
 		} catch (final InvocationTargetException e) {
 			throw e.getTargetException();
 		}

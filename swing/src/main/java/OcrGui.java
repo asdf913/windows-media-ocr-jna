@@ -389,7 +389,7 @@ public class OcrGui extends JFrame implements ActionListener {
 				//
 			} // if
 				//
-			final Clipboard clipboard = toolkit != null ? toolkit.getSystemClipboard() : null;
+			final Clipboard clipboard = getSystemClipboard(toolkit);
 			//
 			if (clipboard != null && Arrays.stream(new Throwable().getStackTrace())
 					.noneMatch(x -> Arrays
@@ -403,6 +403,10 @@ public class OcrGui extends JFrame implements ActionListener {
 				//
 		} // if
 			//
+	}
+
+	private static Clipboard getSystemClipboard(final Toolkit instance) {
+		return instance != null ? instance.getSystemClipboard() : null;
 	}
 
 	private static String getName(final Class<?> instance) {
