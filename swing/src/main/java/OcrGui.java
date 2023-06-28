@@ -5,6 +5,7 @@ import java.awt.LayoutManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
@@ -15,7 +16,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.EventObject;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Properties;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
@@ -63,7 +66,7 @@ public class OcrGui extends JFrame implements ActionListener {
 	private OcrGui() {
 	}
 
-	private void init() {
+	private void init(final Map<?, ?> map) {
 		//
 		// If "java.awt.Container.component" is null, return this method immediately
 		//
@@ -77,6 +80,8 @@ public class OcrGui extends JFrame implements ActionListener {
 		final boolean isGui = f == null || Narcissus.getObjectField(this, f) != null;
 		//
 		final Predicate<Component> predicate = Predicates.always(isGui, null);
+		//
+		// Language Tag
 		//
 		testAndAccept(predicate, new JLabel("Language Tag"), this::add);
 		//
@@ -100,13 +105,19 @@ public class OcrGui extends JFrame implements ActionListener {
 			//
 		} // if
 			//
-			// File
-			//
+		testAndAccept(x -> containsKey(map, x), "languageTag",
+				x -> dcbm.setSelectedItem(get(map, "languageTag")));
+		//
+		// File
+		//
 		testAndAccept(predicate, new JLabel("File"), this::add);
+		//
+		final String growx = "growx";
 		//
 		if (isMigLayout) {
 			//
-			testAndAccept(biPredicate, jtcFile = new JTextField(), "wmin 200px", this::add);
+			testAndAccept(biPredicate, jtcFile = new JTextField(), String.format("%1$s,wmin %2$spx", growx, 200),
+					this::add);
 			//
 		} // if
 			//
@@ -126,7 +137,8 @@ public class OcrGui extends JFrame implements ActionListener {
 		//
 		if (isMigLayout) {
 			//
-			testAndAccept(biPredicate, this.jtcUrl = new JTextField(), "growx", this::add);
+			testAndAccept(biPredicate, this.jtcUrl = new JTextField(toString(get(map, "url"))), growx,
+					this::add);
 			//
 		} // if
 			//
@@ -142,12 +154,20 @@ public class OcrGui extends JFrame implements ActionListener {
 		//
 		if (isMigLayout) {
 			//
-			testAndAccept(biPredicate, jtcText = new JTextField(), "growx", this::add);
+			testAndAccept(biPredicate, jtcText = new JTextField(), growx, this::add);
 			//
 		} // if
 			//
 		setEditable(jtcText, false);
 		//
+	}
+
+	private static boolean containsKey(final Map<?, ?> instance, final Object key) {
+		return instance != null && instance.containsKey(key);
+	}
+
+	private static <V> V get(final Map<?, V> instance, final Object key) {
+		return instance != null ? instance.get(key) : null;
 	}
 
 	private static <T, E extends Throwable> void testAndAccept(final Predicate<T> predicate, final T value,
@@ -223,7 +243,25 @@ public class OcrGui extends JFrame implements ActionListener {
 		//
 		instance.setLayout(new MigLayout());
 		//
-		instance.init();
+		Properties properties = null;
+		//
+		final File file = new File("OcrGui.properties");
+		//
+		try (final InputStream is = testAndApply(f -> f != null && f.exists() && f.isFile() && f.canRead(), file,
+				FileInputStream::new, null)) {
+			//
+			if (is != null) {
+				//
+				(properties = new Properties()).load(is);
+				//
+			} // if
+				//
+		} catch (final IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} // try
+			//
+		instance.init(properties);
 		//
 		instance.pack();
 		//

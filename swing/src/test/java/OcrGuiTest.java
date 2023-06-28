@@ -12,7 +12,9 @@ import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
@@ -53,7 +55,7 @@ class OcrGuiTest {
 		//
 		final Class<?> clz = OcrGui.class;
 		//
-		(METHOD_INIT = clz.getDeclaredMethod("init")).setAccessible(true);
+		(METHOD_INIT = clz.getDeclaredMethod("init", Map.class)).setAccessible(true);
 		//
 		(METHOD_GET_SELECTED_ITEM = clz.getDeclaredMethod("getSelectedItem", ComboBoxModel.class)).setAccessible(true);
 		//
@@ -162,7 +164,7 @@ class OcrGuiTest {
 	@Test
 	void testInit() {
 		//
-		Assertions.assertDoesNotThrow(() -> init());
+		Assertions.assertDoesNotThrow(() -> init(null));
 		//
 		if (instance != null) {
 			//
@@ -170,13 +172,21 @@ class OcrGuiTest {
 			//
 		} // if
 			//
-		Assertions.assertDoesNotThrow(() -> init());
+		Assertions.assertDoesNotThrow(() -> init(null));
+		//
+		final Map<Object, ?> map = new LinkedHashMap<>();
+		//
+		Assertions.assertDoesNotThrow(() -> init(map));
+		//
+		map.put("languageTag", null);
+		//
+		Assertions.assertDoesNotThrow(() -> init(map));
 		//
 	}
 
-	private void init() throws Throwable {
+	private void init(final Map<?, ?> map) throws Throwable {
 		try {
-			METHOD_INIT.invoke(instance);
+			METHOD_INIT.invoke(instance, map);
 		} catch (final InvocationTargetException e) {
 			throw e.getTargetException();
 		}
