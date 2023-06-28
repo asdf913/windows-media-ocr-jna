@@ -319,7 +319,7 @@ public class OcrGui extends JFrame implements ActionListener {
 
 	private static void showExceptionOrErrorOrPrintStackTrace(final Logger logger, final Throwable throwable) {
 		//
-		if (!GraphicsEnvironment.isHeadless() && throwable != null) {
+		if (throwable != null) {
 			//
 			if (throwable.getMessage() == null) {
 				//
@@ -335,7 +335,7 @@ public class OcrGui extends JFrame implements ActionListener {
 					//
 			} // if
 				//
-			if (!isUnderDebugOrMaven()) {
+			if (!GraphicsEnvironment.isHeadless() && !isUnderDebugOrMaven()) {
 				//
 				TaskDialogs.showException(throwable);
 				//
