@@ -54,6 +54,7 @@ import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.generic.ATHROW;
 import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.DUP;
+import org.apache.bcel.generic.FieldOrMethod;
 import org.apache.bcel.generic.INVOKESPECIAL;
 import org.apache.bcel.generic.Instruction;
 import org.apache.bcel.generic.InstructionList;
@@ -523,8 +524,8 @@ public class OcrGui extends JFrame implements ActionListener {
 				//
 				if (ins[i] instanceof InvokeInstruction ii) {
 					//
-					className = ii != null ? ii.getClassName(cpg = ObjectUtils.getIfNull(cpg,
-							() -> testAndApply(Objects::nonNull, cp, ConstantPoolGen::new, null))) : null;
+					className = getClassName(ii, cpg = ObjectUtils.getIfNull(cpg,
+							() -> testAndApply(Objects::nonNull, cp, ConstantPoolGen::new, null)));
 					//
 				} // if
 					//
@@ -564,6 +565,10 @@ public class OcrGui extends JFrame implements ActionListener {
 			//
 		return false;
 		//
+	}
+
+	private static String getClassName(final FieldOrMethod instance, final ConstantPoolGen cpg) {
+		return instance != null ? instance.getClassName(cpg) : null;
 	}
 
 	private static org.apache.bcel.classfile.Method getMethod(final JavaClass instance, final Method method) {

@@ -36,6 +36,8 @@ import javax.swing.text.JTextComponent;
 
 import org.apache.bcel.classfile.ClassParser;
 import org.apache.bcel.classfile.JavaClass;
+import org.apache.bcel.generic.ConstantPoolGen;
+import org.apache.bcel.generic.FieldOrMethod;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.function.FailableConsumer;
 import org.apache.commons.lang3.function.FailableFunction;
@@ -59,9 +61,9 @@ import ocr.Ocr;
 class OcrGuiTest {
 
 	private static Method METHOD_INIT, METHOD_GET_SELECTED_ITEM, METHOD_GET_OCR_TEXT, METHOD_GET_CLASS,
-			METHOD_TO_STRING, METHOD_GET_CLASS_NAME, METHOD_GET_ABSOLUTE_PATH, METHOD_SET_TEXT, METHOD_TEST_AND_ACCEPT3,
-			METHOD_TEST_AND_ACCEPT4, METHOD_STREAM, METHOD_FILTER, METHOD_TO_LIST, METHOD_GET_NAME_MEMBER,
-			METHOD_GET_NAME_CLASS, METHOD_GET_LAYOUT, METHOD_OPEN_STREAM, METHOD_TEST_AND_APPLY,
+			METHOD_TO_STRING, METHOD_GET_CLASS_NAME1, METHOD_GET_CLASS_NAME2, METHOD_GET_ABSOLUTE_PATH, METHOD_SET_TEXT,
+			METHOD_TEST_AND_ACCEPT3, METHOD_TEST_AND_ACCEPT4, METHOD_STREAM, METHOD_FILTER, METHOD_TO_LIST,
+			METHOD_GET_NAME_MEMBER, METHOD_GET_NAME_CLASS, METHOD_GET_LAYOUT, METHOD_OPEN_STREAM, METHOD_TEST_AND_APPLY,
 			METHOD_CREATE_PROPERTIES, METHOD_SHOW_EXCEPTION_ERROR_OR_PRINT_STACK_TRACE, METHOD_ADD_ACTION_LISTENER,
 			METHOD_GET_SYSTEM_CLIP_BOARD, METHOD_SET_CONTENTS, METHOD_IS_RAISE_THROWABLE_ONLY, METHOD_MAP,
 			METHOD_FOR_NAME, METHOD_GET_RESOURCE_AS_STREAM, METHOD_PARSE, METHOD_GET_METHOD,
@@ -83,7 +85,10 @@ class OcrGuiTest {
 		//
 		(METHOD_TO_STRING = clz.getDeclaredMethod("toString", Object.class)).setAccessible(true);
 		//
-		(METHOD_GET_CLASS_NAME = clz.getDeclaredMethod("getClassName", StackTraceElement.class)).setAccessible(true);
+		(METHOD_GET_CLASS_NAME1 = clz.getDeclaredMethod("getClassName", StackTraceElement.class)).setAccessible(true);
+		//
+		(METHOD_GET_CLASS_NAME2 = clz.getDeclaredMethod("getClassName", FieldOrMethod.class, ConstantPoolGen.class))
+				.setAccessible(true);
 		//
 		(METHOD_GET_ABSOLUTE_PATH = clz.getDeclaredMethod("getAbsolutePath", File.class)).setAccessible(true);
 		//
@@ -402,6 +407,8 @@ class OcrGuiTest {
 		//
 		Assertions.assertNull(getClassName(null));
 		//
+		Assertions.assertNull(getClassName(null, null));
+		//
 		if (GraphicsEnvironment.isHeadless()) {
 			//
 			final String className = "className";
@@ -414,13 +421,27 @@ class OcrGuiTest {
 
 	private static String getClassName(final StackTraceElement instance) throws Throwable {
 		try {
-			final Object obj = METHOD_GET_CLASS_NAME.invoke(null, instance);
+			final Object obj = METHOD_GET_CLASS_NAME1.invoke(null, instance);
 			if (obj == null) {
 				return null;
 			} else if (obj instanceof String) {
 				return (String) obj;
 			}
-			throw new Throwable(obj.getClass() != null ? obj.getClass().toString() : null);
+			throw new Throwable(toString(getClass(obj)));
+		} catch (final InvocationTargetException e) {
+			throw e.getTargetException();
+		}
+	}
+
+	private static String getClassName(final FieldOrMethod instance, final ConstantPoolGen cpg) throws Throwable {
+		try {
+			final Object obj = METHOD_GET_CLASS_NAME2.invoke(null, instance, cpg);
+			if (obj == null) {
+				return null;
+			} else if (obj instanceof String) {
+				return (String) obj;
+			}
+			throw new Throwable(toString(getClass(obj)));
 		} catch (final InvocationTargetException e) {
 			throw e.getTargetException();
 		}
