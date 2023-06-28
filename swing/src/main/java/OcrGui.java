@@ -136,7 +136,7 @@ public class OcrGui extends JFrame implements ActionListener {
 		//
 		final DefaultComboBoxModel<String> dcbm = new DefaultComboBoxModel<>();
 		//
-		testAndAccept(Objects::nonNull, o != null ? o.getAvailableRecognizerLanguageTags() : null, dcbm::addAll);
+		testAndAccept(Objects::nonNull, getAvailableRecognizerLanguageTags(o), dcbm::addAll);
 		//
 		final String wrap = "wrap";
 		//
@@ -209,7 +209,10 @@ public class OcrGui extends JFrame implements ActionListener {
 			//
 		addActionListener(this, abFile, abUrl, abCopyText);
 		//
+	}
 
+	private static List<String> getAvailableRecognizerLanguageTags(final Ocr instance) {
+		return instance != null ? instance.getAvailableRecognizerLanguageTags() : null;
 	}
 
 	private static boolean containsKey(final Map<?, ?> instance, final Object key) {
