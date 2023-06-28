@@ -462,7 +462,7 @@ public class OcrGui extends JFrame implements ActionListener {
 			setText(jtcText,
 					getOcrText(getOcr(), languageTag, testAndApply(Objects::nonNull, is, IOUtils::toByteArray, null)));
 			//
-		} catch (final IOException e) {
+		} catch (final Throwable e) {
 			//
 			showExceptionOrErrorOrPrintStackTrace(LOG, e);
 			//
