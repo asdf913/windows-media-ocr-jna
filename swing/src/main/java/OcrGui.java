@@ -93,14 +93,20 @@ public class OcrGui extends JFrame implements ActionListener {
 	@Note("File")
 	private JTextComponent jtcFile = null;
 
-	private JTextComponent jtcUrl, jtcText = null;
+	@Note("URL")
+	private JTextComponent jtcUrl = null;
+
+	private JTextComponent jtcText = null;
 
 	private transient ComboBoxModel<?> cbmLanaguageTag = null;
 
 	@Note("File")
 	private AbstractButton abFile = null;
 
-	private AbstractButton abUrl, abCopyText = null;
+	@Note("URL")
+	private AbstractButton abUrl = null;
+
+	private AbstractButton abCopyText = null;
 
 	private transient Ocr ocr = null;
 
