@@ -49,9 +49,9 @@ class OcrGuiTest {
 
 	private static Method METHOD_INIT, METHOD_GET_SELECTED_ITEM, METHOD_GET_OCR_TEXT, METHOD_GET_CLASS,
 			METHOD_TO_STRING, METHOD_GET_CLASS_NAME, METHOD_GET_ABSOLUTE_PATH, METHOD_SET_TEXT, METHOD_TEST_AND_ACCEPT3,
-			METHOD_TEST_AND_ACCEPT4, METHOD_STREAM, METHOD_FILTER, METHOD_TO_LIST, METHOD_GET_NAME, METHOD_GET_LAYOUT,
-			METHOD_OPEN_STREAM, METHOD_TEST_AND_APPLY, METHOD_CREATE_PROPERTIES,
-			METHOD_ERROR_OR_PRINT_STACK_TRACE = null;
+			METHOD_TEST_AND_ACCEPT4, METHOD_STREAM, METHOD_FILTER, METHOD_TO_LIST, METHOD_GET_NAME_MEMBER,
+			METHOD_GET_NAME_CLASS, METHOD_GET_LAYOUT, METHOD_OPEN_STREAM, METHOD_TEST_AND_APPLY,
+			METHOD_CREATE_PROPERTIES, METHOD_ERROR_OR_PRINT_STACK_TRACE, METHOD_ADD_ACTION_LISTENER = null;
 
 	@BeforeAll
 	static void beforeAll() throws ReflectiveOperationException {
@@ -87,7 +87,9 @@ class OcrGuiTest {
 		//
 		(METHOD_TO_LIST = clz.getDeclaredMethod("toList", Stream.class)).setAccessible(true);
 		//
-		(METHOD_GET_NAME = clz.getDeclaredMethod("getName", Member.class)).setAccessible(true);
+		(METHOD_GET_NAME_MEMBER = clz.getDeclaredMethod("getName", Member.class)).setAccessible(true);
+		//
+		(METHOD_GET_NAME_CLASS = clz.getDeclaredMethod("getName", Class.class)).setAccessible(true);
 		//
 		(METHOD_GET_LAYOUT = clz.getDeclaredMethod("getLayout", Container.class)).setAccessible(true);
 		//
@@ -100,6 +102,9 @@ class OcrGuiTest {
 		//
 		(METHOD_ERROR_OR_PRINT_STACK_TRACE = clz.getDeclaredMethod("errorOrPrintStackTrace", Logger.class,
 				Throwable.class)).setAccessible(true);
+		//
+		(METHOD_ADD_ACTION_LISTENER = clz.getDeclaredMethod("addActionListener", ActionListener.class,
+				AbstractButton.class, AbstractButton.class, AbstractButton[].class)).setAccessible(true);
 		//
 	}
 
@@ -237,6 +242,12 @@ class OcrGuiTest {
 		setText(jtcUrl, " ");
 		//
 		Assertions.assertDoesNotThrow(() -> actionPerformed(instance, actionEvent));
+		//
+		final AbstractButton abCopyText = new JButton();
+		//
+		FieldUtils.writeDeclaredField(instance, "abCopyText", abCopyText, true);
+		//
+		Assertions.assertDoesNotThrow(() -> actionPerformed(instance, new ActionEvent(abCopyText, 0, null)));
 		//
 	}
 
@@ -501,13 +512,29 @@ class OcrGuiTest {
 	@Test
 	void testGetName() throws Throwable {
 		//
-		Assertions.assertNull(getName(null));
+		Assertions.assertNull(getName((Member) null));
+		//
+		Assertions.assertNull(getName((Class<?>) null));
 		//
 	}
 
 	private static String getName(final Member instance) throws Throwable {
 		try {
-			final Object obj = METHOD_GET_NAME.invoke(null, instance);
+			final Object obj = METHOD_GET_NAME_MEMBER.invoke(null, instance);
+			if (obj == null) {
+				return null;
+			} else if (obj instanceof String) {
+				return (String) obj;
+			}
+			throw new Throwable(toString(getClass(obj)));
+		} catch (final InvocationTargetException e) {
+			throw e.getTargetException();
+		}
+	}
+
+	private static String getName(final Class<?> instance) throws Throwable {
+		try {
+			final Object obj = METHOD_GET_NAME_CLASS.invoke(null, instance);
 			if (obj == null) {
 				return null;
 			} else if (obj instanceof String) {
@@ -645,6 +672,22 @@ class OcrGuiTest {
 	private static void errorOrPrintStackTrace(final Logger logger, final Throwable throwable) throws Throwable {
 		try {
 			METHOD_ERROR_OR_PRINT_STACK_TRACE.invoke(null, logger, throwable);
+		} catch (final InvocationTargetException e) {
+			throw e.getTargetException();
+		}
+	}
+
+	@Test
+	void testAddActionListener() {
+		//
+		Assertions.assertDoesNotThrow(() -> addActionListener(null, null, null, (AbstractButton[]) null));
+		//
+	}
+
+	private static void addActionListener(final ActionListener actionListener, final AbstractButton a,
+			final AbstractButton b, final AbstractButton... abs) throws Throwable {
+		try {
+			METHOD_ADD_ACTION_LISTENER.invoke(null, actionListener, a, b, abs);
 		} catch (final InvocationTargetException e) {
 			throw e.getTargetException();
 		}

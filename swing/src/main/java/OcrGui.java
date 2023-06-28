@@ -2,6 +2,9 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.GraphicsEnvironment;
 import java.awt.LayoutManager;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -63,7 +66,7 @@ public class OcrGui extends JFrame implements ActionListener {
 
 	private transient ComboBoxModel<?> cbmLanaguageTag = null;
 
-	private AbstractButton abFile, abUrl = null;
+	private AbstractButton abFile, abUrl, abCopyText = null;
 
 	private transient Ocr ocr = null;
 
@@ -132,10 +135,8 @@ public class OcrGui extends JFrame implements ActionListener {
 			//
 		} // if
 			//
-		addActionListener(abFile, this);
-		//
-		// URL
-		//
+			// URL
+			//
 		testAndAccept(predicate, new JLabel("URL"), this::add);
 		//
 		if (isMigLayout) {
@@ -150,8 +151,6 @@ public class OcrGui extends JFrame implements ActionListener {
 			//
 		} // if
 			//
-		addActionListener(abUrl, this);
-		//
 		testAndAccept(predicate, new JLabel("Text"), this::add);
 		//
 		if (isMigLayout) {
@@ -161,6 +160,14 @@ public class OcrGui extends JFrame implements ActionListener {
 		} // if
 			//
 		setEditable(jtcText, false);
+		//
+		if (isMigLayout) {
+			//
+			testAndAccept(biPredicate, abCopyText = new JButton("Copy"), wrap, this::add);
+			//
+		} // if
+			//
+		addActionListener(this, abFile, abUrl, abCopyText);
 		//
 	}
 
@@ -218,6 +225,21 @@ public class OcrGui extends JFrame implements ActionListener {
 		if (instance != null) {
 			instance.setEditable(b);
 		}
+	}
+
+	private static void addActionListener(final ActionListener actionListener, final AbstractButton a,
+			final AbstractButton b, final AbstractButton... abs) {
+		//
+		addActionListener(a, actionListener);
+		//
+		addActionListener(b, actionListener);
+		//
+		for (int i = 0; abs != null && i < abs.length; i++) {
+			//
+			addActionListener(abs[i], actionListener);
+			//
+		} // for
+			//
 	}
 
 	private static void addActionListener(final AbstractButton instance, final ActionListener actionListener) {
@@ -357,8 +379,34 @@ public class OcrGui extends JFrame implements ActionListener {
 				//
 			} // try
 				//
+		} else if (Objects.equals(source, abCopyText)) {
+			//
+			final Toolkit toolkit = Toolkit.getDefaultToolkit();
+			//
+			if (Objects.equals("sun.awt.HeadlessToolkit", getName(getClass(toolkit)))) {
+				//
+				return;
+				//
+			} // if
+				//
+			final Clipboard clipboard = toolkit != null ? toolkit.getSystemClipboard() : null;
+			//
+			if (clipboard != null && Arrays.stream(new Throwable().getStackTrace())
+					.noneMatch(x -> Arrays
+							.asList("org.eclipse.jdt.internal.junit5.runner.JUnit5TestReference",
+									"org.apache.maven.surefire.junitplatform.JUnitPlatformProvider")
+							.contains(getClassName(x)))) {
+				//
+				clipboard.setContents(new StringSelection(getText(jtcText)), null);
+				//
+			} // if
+				//
 		} // if
 			//
+	}
+
+	private static String getName(final Class<?> instance) {
+		return instance != null ? instance.getName() : null;
 	}
 
 	private static InputStream openStream(final URL instance) throws IOException {
