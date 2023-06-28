@@ -14,6 +14,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.net.URL;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -23,6 +24,7 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -33,6 +35,7 @@ import javax.swing.JButton;
 import javax.swing.JTextField;
 import javax.swing.text.JTextComponent;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.function.FailableConsumer;
 import org.apache.commons.lang3.function.FailableFunction;
 import org.apache.commons.lang3.reflect.FieldUtils;
@@ -59,7 +62,8 @@ class OcrGuiTest {
 			METHOD_TEST_AND_ACCEPT4, METHOD_STREAM, METHOD_FILTER, METHOD_TO_LIST, METHOD_GET_NAME_MEMBER,
 			METHOD_GET_NAME_CLASS, METHOD_GET_LAYOUT, METHOD_OPEN_STREAM, METHOD_TEST_AND_APPLY,
 			METHOD_CREATE_PROPERTIES, METHOD_SHOW_EXCEPTION_ERROR_OR_PRINT_STACK_TRACE, METHOD_ADD_ACTION_LISTENER,
-			METHOD_GET_SYSTEM_CLIP_BOARD, METHOD_SET_CONTENTS = null;
+			METHOD_GET_SYSTEM_CLIP_BOARD, METHOD_SET_CONTENTS, METHOD_IS_RAISE_THROWABLE_ONLY, METHOD_MAP,
+			METHOD_FOR_NAME = null;
 
 	@BeforeAll
 	static void beforeAll() throws ReflectiveOperationException {
@@ -120,6 +124,13 @@ class OcrGuiTest {
 		(METHOD_SET_CONTENTS = clz.getDeclaredMethod("setContents", Clipboard.class, Transferable.class,
 				ClipboardOwner.class)).setAccessible(true);
 		//
+		(METHOD_IS_RAISE_THROWABLE_ONLY = clz.getDeclaredMethod("isRaiseThrowableOnly", Class.class, Method.class))
+				.setAccessible(true);
+		//
+		(METHOD_MAP = clz.getDeclaredMethod("map", Stream.class, Function.class)).setAccessible(true);
+		//
+		(METHOD_FOR_NAME = clz.getDeclaredMethod("forName", String.class)).setAccessible(true);
+		//
 	}
 
 	private static class IH implements InvocationHandler {
@@ -144,6 +155,10 @@ class OcrGuiTest {
 				if (Objects.equals(methodName, "filter")) {
 					//
 					return proxy;
+					//
+				} else if (Objects.equals(methodName, "map")) {
+					//
+					return null;
 					//
 				} // if
 					//
@@ -795,6 +810,78 @@ class OcrGuiTest {
 			throws Throwable {
 		try {
 			METHOD_SET_CONTENTS.invoke(null, instance, contents, owner);
+		} catch (final InvocationTargetException e) {
+			throw e.getTargetException();
+		}
+	}
+
+	@Test
+	void testIsRaiseThrowableOnly() throws Throwable {
+		//
+		Assertions.assertFalse(isRaiseThrowableOnly(null, null));
+		//
+	}
+
+	private static boolean isRaiseThrowableOnly(final Class<?> clz, final Method method) throws Throwable {
+		try {
+			final Object obj = METHOD_IS_RAISE_THROWABLE_ONLY.invoke(null, clz, method);
+			if (obj instanceof Boolean) {
+				return ((Boolean) obj).booleanValue();
+			}
+			throw new Throwable(toString(getClass(obj)));
+		} catch (final InvocationTargetException e) {
+			throw e.getTargetException();
+		}
+	}
+
+	@Test
+	void testMap() throws Throwable {
+		//
+		Assertions.assertNull(map(Stream.empty(), null));
+		//
+		Assertions.assertNull(map(Reflection.newProxy(Stream.class, ih), null));
+		//
+	}
+
+	private static <T, R> Stream<R> map(final Stream<T> instance, final Function<? super T, ? extends R> mapper)
+			throws Throwable {
+		try {
+			final Object obj = METHOD_MAP.invoke(null, instance, mapper);
+			if (obj == null) {
+				return null;
+			} else if (obj instanceof Stream) {
+				return (Stream) obj;
+			}
+			throw new Throwable(toString(getClass(obj)));
+		} catch (final InvocationTargetException e) {
+			throw e.getTargetException();
+		}
+	}
+
+	@Test
+	void testForName() throws Throwable {
+		//
+		Assertions.assertNull(forName(null));
+		//
+		Assertions.assertNull(forName("A"));
+		//
+		final Class<?> clz = getClass("");
+		//
+		final String string = getName(clz);
+		//
+		Assertions.assertSame(clz, forName(string));
+		//
+	}
+
+	private static Class<?> forName(final String className) throws Throwable {
+		try {
+			final Object obj = METHOD_FOR_NAME.invoke(null, className);
+			if (obj == null) {
+				return null;
+			} else if (obj instanceof Class) {
+				return (Class<?>) obj;
+			}
+			throw new Throwable(toString(getClass(obj)));
 		} catch (final InvocationTargetException e) {
 			throw e.getTargetException();
 		}

@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
+import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.net.URL;
 import java.util.Arrays;
@@ -26,6 +27,7 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -42,9 +44,22 @@ import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 import javax.swing.text.JTextComponent;
 
+import org.apache.bcel.classfile.ClassParser;
+import org.apache.bcel.classfile.ConstantPool;
+import org.apache.bcel.classfile.JavaClass;
+import org.apache.bcel.generic.ATHROW;
+import org.apache.bcel.generic.ConstantPoolGen;
+import org.apache.bcel.generic.DUP;
+import org.apache.bcel.generic.INVOKESPECIAL;
+import org.apache.bcel.generic.Instruction;
+import org.apache.bcel.generic.InstructionList;
+import org.apache.bcel.generic.InvokeInstruction;
+import org.apache.bcel.generic.MethodGen;
+import org.apache.bcel.generic.NEW;
 import org.apache.commons.collections4.IterableUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.function.FailableConsumer;
 import org.apache.commons.lang3.function.FailableFunction;
@@ -433,11 +448,21 @@ public class OcrGui extends JFrame implements ActionListener {
 		//
 		final Toolkit toolkit = Toolkit.getDefaultToolkit();
 		//
-		if (Objects.equals("sun.awt.HeadlessToolkit", getName(getClass(toolkit)))) {
+		final Class<?> clz = getClass(toolkit);
+		//
+		try {
 			//
-			return;
+			if (isRaiseThrowableOnly(clz, clz != null ? clz.getDeclaredMethod("getSystemClipboard") : null)) {
+				//
+				return;
+				//
+			} // if
+				//
+		} catch (final NoSuchMethodException e) {
 			//
-		} // if
+			showExceptionOrErrorOrPrintStackTrace(LOG, e);
+			//
+		} // try
 			//
 		if (!isUnderDebugOrMaven()) {
 			//
@@ -445,6 +470,96 @@ public class OcrGui extends JFrame implements ActionListener {
 			//
 		} // if
 			//
+	}
+
+	private static boolean isRaiseThrowableOnly(final Class<?> clz, final Method method) {
+		//
+		try (final InputStream is = clz != null
+				? clz.getResourceAsStream(String.format("/%1$s.class", StringUtils.replace(getName(clz), ".", "/")))
+				: null) {
+			//
+			final JavaClass javaClass = parse(testAndApply(Objects::nonNull, is, x -> new ClassParser(x, null), null));
+			//
+			final org.apache.bcel.classfile.Method m = javaClass != null ? javaClass.getMethod(method) : null;
+			//
+			final MethodGen mg = testAndApply(Objects::nonNull, m, x -> new MethodGen(x, null, null), null);
+			//
+			final InstructionList il = mg != null ? mg.getInstructionList() : null;
+			//
+			final Instruction[] ins = il != null ? il.getInstructions() : null;
+			//
+			final ConstantPool cp = m != null ? m.getConstantPool() : null;
+			//
+			ConstantPoolGen cpg = null;
+			//
+			final int length = ins != null ? ins.length : 0;
+			//
+			String className = null;
+			//
+			for (int i = 0; i < length; i++) {
+				//
+				if (ins[i] instanceof InvokeInstruction ii) {
+					//
+					className = ii != null ? ii.getClassName(cpg = ObjectUtils.getIfNull(cpg,
+							() -> testAndApply(Objects::nonNull, cp, ConstantPoolGen::new, null))) : null;
+					//
+				} // if
+					//
+			} // for
+				//
+				// The below method
+				//
+				// void methodA(){throw new RuntimeException();}
+				//
+				// generates
+				//
+				// new[187](3) 371
+				// dup[89](1)
+				// invokespecial[183](3) 373
+				// athrow[191](1)
+				//
+				// instructions
+				//
+			if (Objects.equals(Arrays.asList(NEW.class, DUP.class, INVOKESPECIAL.class, ATHROW.class),
+					toList(map(testAndApply(Objects::nonNull, ins, Arrays::stream, null), x -> getClass(x))))) {
+				//
+				final Class<?> c = forName(className);
+				//
+				if (c != null && Throwable.class.isAssignableFrom(c)) {
+					//
+					return true;
+					//
+				} // if
+					//
+			} // if
+				//
+		} catch (final IOException e) {
+			//
+			showExceptionOrErrorOrPrintStackTrace(LOG, e);
+			//
+		} // try
+			//
+		return false;
+		//
+	}
+
+	private static <T, R> Stream<R> map(final Stream<T> instance, final Function<? super T, ? extends R> mapper) {
+		//
+		return instance != null && (Proxy.isProxyClass(getClass(instance)) || mapper != null) ? instance.map(mapper)
+				: null;
+		//
+	}
+
+	private static Class<?> forName(final String className) {
+		try {
+			return StringUtils.isNotBlank(className) ? Class.forName(className) : null;
+		} catch (final ClassNotFoundException e) {
+			return null;
+		}
+	}
+
+	private static JavaClass parse(final ClassParser instance) throws IOException {
+		return instance != null ? instance.parse() : null;
 	}
 
 	private static void setContents(final Clipboard instance, final Transferable contents, final ClipboardOwner owner) {
