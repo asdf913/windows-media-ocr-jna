@@ -474,9 +474,8 @@ public class OcrGui extends JFrame implements ActionListener {
 
 	private static boolean isRaiseThrowableOnly(final Class<?> clz, final Method method) {
 		//
-		try (final InputStream is = clz != null
-				? clz.getResourceAsStream(String.format("/%1$s.class", StringUtils.replace(getName(clz), ".", "/")))
-				: null) {
+		try (final InputStream is = getResourceAsStream(clz,
+				String.format("/%1$s.class", StringUtils.replace(getName(clz), ".", "/")))) {
 			//
 			final JavaClass javaClass = parse(testAndApply(Objects::nonNull, is, x -> new ClassParser(x, null), null));
 			//
@@ -541,6 +540,10 @@ public class OcrGui extends JFrame implements ActionListener {
 			//
 		return false;
 		//
+	}
+
+	private static InputStream getResourceAsStream(final Class<?> instance, final String name) {
+		return instance != null && name != null ? instance.getResourceAsStream(name) : null;
 	}
 
 	private static <T, R> Stream<R> map(final Stream<T> instance, final Function<? super T, ? extends R> mapper) {

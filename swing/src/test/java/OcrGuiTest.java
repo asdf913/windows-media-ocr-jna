@@ -14,7 +14,6 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 import java.net.URL;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -35,7 +34,6 @@ import javax.swing.JButton;
 import javax.swing.JTextField;
 import javax.swing.text.JTextComponent;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.function.FailableConsumer;
 import org.apache.commons.lang3.function.FailableFunction;
 import org.apache.commons.lang3.reflect.FieldUtils;
@@ -63,7 +61,7 @@ class OcrGuiTest {
 			METHOD_GET_NAME_CLASS, METHOD_GET_LAYOUT, METHOD_OPEN_STREAM, METHOD_TEST_AND_APPLY,
 			METHOD_CREATE_PROPERTIES, METHOD_SHOW_EXCEPTION_ERROR_OR_PRINT_STACK_TRACE, METHOD_ADD_ACTION_LISTENER,
 			METHOD_GET_SYSTEM_CLIP_BOARD, METHOD_SET_CONTENTS, METHOD_IS_RAISE_THROWABLE_ONLY, METHOD_MAP,
-			METHOD_FOR_NAME = null;
+			METHOD_FOR_NAME, METHOD_GET_RESOURCE_AS_STREAM = null;
 
 	@BeforeAll
 	static void beforeAll() throws ReflectiveOperationException {
@@ -130,6 +128,9 @@ class OcrGuiTest {
 		(METHOD_MAP = clz.getDeclaredMethod("map", Stream.class, Function.class)).setAccessible(true);
 		//
 		(METHOD_FOR_NAME = clz.getDeclaredMethod("forName", String.class)).setAccessible(true);
+		//
+		(METHOD_GET_RESOURCE_AS_STREAM = clz.getDeclaredMethod("getResourceAsStream", Class.class, String.class))
+				.setAccessible(true);
 		//
 	}
 
@@ -880,6 +881,27 @@ class OcrGuiTest {
 				return null;
 			} else if (obj instanceof Class) {
 				return (Class<?>) obj;
+			}
+			throw new Throwable(toString(getClass(obj)));
+		} catch (final InvocationTargetException e) {
+			throw e.getTargetException();
+		}
+	}
+
+	@Test
+	void testGetResourceAsStream() throws Throwable {
+		//
+		Assertions.assertNull(getResourceAsStream(Class.class, null));
+		//
+	}
+
+	private static InputStream getResourceAsStream(final Class<?> instance, final String name) throws Throwable {
+		try {
+			final Object obj = METHOD_GET_RESOURCE_AS_STREAM.invoke(null, instance, name);
+			if (obj == null) {
+				return null;
+			} else if (obj instanceof InputStream) {
+				return (InputStream) obj;
 			}
 			throw new Throwable(toString(getClass(obj)));
 		} catch (final InvocationTargetException e) {
