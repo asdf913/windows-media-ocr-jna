@@ -68,7 +68,8 @@ class OcrGuiTest {
 			METHOD_CREATE_PROPERTIES, METHOD_SHOW_EXCEPTION_ERROR_OR_PRINT_STACK_TRACE, METHOD_ADD_ACTION_LISTENER,
 			METHOD_GET_SYSTEM_CLIP_BOARD, METHOD_SET_CONTENTS, METHOD_IS_RAISE_THROWABLE_ONLY, METHOD_MAP,
 			METHOD_FOR_NAME, METHOD_GET_RESOURCE_AS_STREAM, METHOD_PARSE, METHOD_GET_METHOD,
-			METHOD_IS_UNDER_DEBUG_OR_MAVEN, METHOD_GET_AVAILABLE_RECOGNIZER_LANGUAGE_TAGS = null;
+			METHOD_IS_UNDER_DEBUG_OR_MAVEN, METHOD_GET_AVAILABLE_RECOGNIZER_LANGUAGE_TAGS,
+			METHOD_IS_ASSIGNABLE_FROM = null;
 
 	@BeforeAll
 	static void beforeAll() throws ReflectiveOperationException {
@@ -150,6 +151,9 @@ class OcrGuiTest {
 		//
 		(METHOD_GET_AVAILABLE_RECOGNIZER_LANGUAGE_TAGS = clz.getDeclaredMethod("getAvailableRecognizerLanguageTags",
 				Ocr.class)).setAccessible(true);
+		//
+		(METHOD_IS_ASSIGNABLE_FROM = clz.getDeclaredMethod("isAssignableFrom", Class.class, Class.class))
+				.setAccessible(true);
 		//
 	}
 
@@ -1023,6 +1027,29 @@ class OcrGuiTest {
 				return null;
 			} else if (obj instanceof List) {
 				return (List) obj;
+			}
+			throw new Throwable(toString(getClass(obj)));
+		} catch (final InvocationTargetException e) {
+			throw e.getTargetException();
+		}
+	}
+
+	@Test
+	void testIsAssignableFrom() throws Throwable {
+		//
+		Assertions.assertFalse(isAssignableFrom(null, null));
+		//
+		Assertions.assertFalse(isAssignableFrom(Throwable.class, null));
+		//
+		Assertions.assertFalse(isAssignableFrom(Throwable.class, String.class));
+		//
+	}
+
+	private static boolean isAssignableFrom(final Class<?> a, final Class<?> b) throws Throwable {
+		try {
+			final Object obj = METHOD_IS_ASSIGNABLE_FROM.invoke(null, a, b);
+			if (obj instanceof Boolean) {
+				return ((Boolean) obj).booleanValue();
 			}
 			throw new Throwable(toString(getClass(obj)));
 		} catch (final InvocationTargetException e) {
