@@ -38,6 +38,7 @@ import org.apache.bcel.classfile.ClassParser;
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.FieldOrMethod;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.function.FailableConsumer;
 import org.apache.commons.lang3.function.FailableFunction;
@@ -705,6 +706,8 @@ class OcrGuiTest {
 	void testCreateProperties() throws Throwable {
 		//
 		Assertions.assertNull(createProperties(null));
+		//
+		Assertions.assertNull(createProperties(new File(RandomStringUtils.randomAlphabetic(1))));
 		//
 		File file = new File(".");
 		//
