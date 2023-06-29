@@ -405,8 +405,8 @@ public class OcrGui extends JFrame implements ActionListener {
 			//
 			final String languageTag = toString(getSelectedItem(cbmLanaguageTag));
 			//
-			final boolean isNotHeadLessAndisNotUnderDebugOrTest = !GraphicsEnvironment.isHeadless()
-					&& !isUnderDebugOrMaven();
+			final boolean isNotHeadLessAndisNotUnderDebugOrTest = Boolean.logicalAnd(!GraphicsEnvironment.isHeadless(),
+					!isUnderDebugOrMaven());
 			//
 			if (languageTag == null) {
 				//
