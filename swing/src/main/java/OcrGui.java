@@ -483,45 +483,47 @@ public class OcrGui extends JFrame implements ActionListener {
 			//
 		} catch (final Throwable e) {
 			//
-			final StackTraceElement[] stes = getStackTrace(e);
+			filterStackTrace(e, OcrGui.class);
 			//
-			Integer index = null;
-			//
-			for (int i = (stes != null ? stes.length : 0) - 1; i > 0; i--) {
-				//
-				if (Objects.equals(OcrGui.class, forName(getClassName(stes[i])))) {
-					//
-					index = Integer.valueOf(i);
-					//
-					break;
-					//
-				} // if
-					//
-			} // for
-				//
-			if (index != null) {
-				//
-				try {
-					//
-					Narcissus.setObjectField(e, Throwable.class.getDeclaredField("stackTrace"),
-							ArrayUtils.subarray(stes, 0, index.intValue() + 1));
-					//
-				} catch (final NoSuchFieldException ex) {
-					//
-					showExceptionOrErrorOrPrintStackTrace(LOG, ex);
-					//
-				} // try
-					//
-			} // if
-				//
 			showExceptionOrErrorOrPrintStackTrace(LOG, e);
 			//
 		} // try
 			//
 	}
 
-	private static StackTraceElement[] getStackTrace(final Throwable instance) {
-		return instance != null ? instance.getStackTrace() : null;
+	private static void filterStackTrace(final Throwable throwable, final Class<?> clz) {
+		//
+		final StackTraceElement[] stes = throwable != null ? throwable.getStackTrace() : null;
+		//
+		Integer index = null;
+		//
+		for (int i = (stes != null ? stes.length : 0) - 1; i >= 0; i--) {
+			//
+			if (Objects.equals(clz, forName(getClassName(stes[i])))) {
+				//
+				index = Integer.valueOf(i);
+				//
+				break;
+				//
+			} // if
+				//
+		} // for
+			//
+		if (index != null) {
+			//
+			try {
+				//
+				Narcissus.setObjectField(throwable, Throwable.class.getDeclaredField("stackTrace"),
+						ArrayUtils.subarray(stes, 0, index.intValue() + 1));
+				//
+			} catch (final NoSuchFieldException ex) {
+				//
+				showExceptionOrErrorOrPrintStackTrace(LOG, ex);
+				//
+			} // try
+				//
+		} // if
+			//
 	}
 
 	private void actionPerformedAbCopyText() {

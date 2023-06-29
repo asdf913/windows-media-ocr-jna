@@ -71,7 +71,7 @@ class OcrGuiTest {
 			METHOD_SHOW_EXCEPTION_ERROR_OR_PRINT_STACK_TRACE, METHOD_ADD_ACTION_LISTENER, METHOD_GET_SYSTEM_CLIP_BOARD,
 			METHOD_SET_CONTENTS, METHOD_IS_RAISE_THROWABLE_ONLY, METHOD_MAP, METHOD_FOR_NAME,
 			METHOD_GET_RESOURCE_AS_STREAM, METHOD_PARSE, METHOD_GET_METHOD, METHOD_IS_UNDER_DEBUG_OR_MAVEN,
-			METHOD_GET_AVAILABLE_RECOGNIZER_LANGUAGE_TAGS, METHOD_IS_ASSIGNABLE_FROM, METHOD_GET_STACK_TRACE = null;
+			METHOD_GET_AVAILABLE_RECOGNIZER_LANGUAGE_TAGS, METHOD_IS_ASSIGNABLE_FROM, METHOD_FILTER_STACK_TRACE = null;
 
 	@BeforeAll
 	static void beforeAll() throws ReflectiveOperationException {
@@ -161,7 +161,8 @@ class OcrGuiTest {
 		(METHOD_IS_ASSIGNABLE_FROM = clz.getDeclaredMethod("isAssignableFrom", Class.class, Class.class))
 				.setAccessible(true);
 		//
-		(METHOD_GET_STACK_TRACE = clz.getDeclaredMethod("getStackTrace", Throwable.class)).setAccessible(true);
+		(METHOD_FILTER_STACK_TRACE = clz.getDeclaredMethod("filterStackTrace", Throwable.class, Class.class))
+				.setAccessible(true);
 		//
 	}
 
@@ -1100,23 +1101,21 @@ class OcrGuiTest {
 	}
 
 	@Test
-	void testGetStackTrace() throws Throwable {
+	void testFilterStackTrace() {
 		//
-		Assertions.assertNull(getStackTrace(null));
+		Assertions.assertDoesNotThrow(() -> filterStackTrace(null, null));
 		//
-		Assertions.assertNotNull(getStackTrace(new Throwable()));
+		final Throwable throwable = new Throwable();
+		//
+		Assertions.assertDoesNotThrow(() -> filterStackTrace(throwable, null));
+		//
+		Assertions.assertDoesNotThrow(() -> filterStackTrace(throwable, OcrGuiTest.class));
 		//
 	}
 
-	private static StackTraceElement[] getStackTrace(final Throwable instance) throws Throwable {
+	private static void filterStackTrace(final Throwable throwable, final Class<?> clz) throws Throwable {
 		try {
-			final Object obj = METHOD_GET_STACK_TRACE.invoke(null, instance);
-			if (obj == null) {
-				return null;
-			} else if (obj instanceof StackTraceElement[]) {
-				return (StackTraceElement[]) obj;
-			}
-			throw new Throwable(toString(getClass(obj)));
+			METHOD_FILTER_STACK_TRACE.invoke(null, throwable, clz);
 		} catch (final InvocationTargetException e) {
 			throw e.getTargetException();
 		}
