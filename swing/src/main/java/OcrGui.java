@@ -65,6 +65,7 @@ import org.apache.bcel.generic.NEW;
 import org.apache.commons.collections4.IterableUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.function.FailableConsumer;
@@ -482,6 +483,45 @@ public class OcrGui extends JFrame implements ActionListener {
 			//
 		} catch (final Throwable e) {
 			//
+			final StackTraceElement[] stes = e != null ? e.getStackTrace() : null;
+			//
+			StackTraceElement ste = null;
+			//
+			Integer index = null;
+			//
+			for (int i = (stes != null ? stes.length : 0) - 1; i > 0; i--) {
+				//
+				if ((ste = stes[i]) == null) {
+					//
+					continue;
+					//
+				} // if
+					//
+				if (Objects.equals(OcrGui.class, forName(getClassName(ste)))) {
+					//
+					index = Integer.valueOf(i);
+					//
+					break;
+					//
+				} // if
+					//
+			} // for
+				//
+			if (index != null) {
+				//
+				try {
+					//
+					Narcissus.setObjectField(e, Throwable.class.getDeclaredField("stackTrace"),
+							ArrayUtils.subarray(stes, 0, index.intValue() + 1));
+					//
+				} catch (final NoSuchFieldException ex) {
+					//
+					showExceptionOrErrorOrPrintStackTrace(LOG, ex);
+					//
+				} // try
+					//
+			} // if
+				//
 			showExceptionOrErrorOrPrintStackTrace(LOG, e);
 			//
 		} // try
