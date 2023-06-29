@@ -33,6 +33,7 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.text.JTextComponent;
 
 import org.apache.bcel.classfile.ClassParser;
@@ -322,6 +323,8 @@ class OcrGuiTest {
 		//
 		Assertions.assertDoesNotThrow(() -> actionPerformed(instance, null));
 		//
+		// abUrl
+		//
 		final AbstractButton abUrl = new JButton();
 		//
 		FieldUtils.writeDeclaredField(instance, "abUrl", abUrl, true);
@@ -339,6 +342,16 @@ class OcrGuiTest {
 		setText(jtcUrl, " ");
 		//
 		Assertions.assertDoesNotThrow(() -> actionPerformed(instance, actionEvent1));
+		//
+		final DefaultTableModel dtmResponseHeaders = new DefaultTableModel();
+		//
+		dtmResponseHeaders.addRow(new Object[] { null });
+		//
+		FieldUtils.writeDeclaredField(instance, "dtmResponseHeaders", dtmResponseHeaders, true);
+		//
+		Assertions.assertDoesNotThrow(() -> actionPerformed(instance, actionEvent1));
+		//
+		// abCopyText
 		//
 		final AbstractButton abCopyText = new JButton();
 		//
