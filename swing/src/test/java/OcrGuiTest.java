@@ -31,6 +31,8 @@ import javax.swing.AbstractButton;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.text.JTextComponent;
 
@@ -306,25 +308,49 @@ class OcrGuiTest {
 		//
 		FieldUtils.writeDeclaredField(instance, "abUrl", abUrl, true);
 		//
-		final ActionEvent actionEvent = new ActionEvent(abUrl, 0, null);
+		final ActionEvent actionEvent1 = new ActionEvent(abUrl, 0, null);
 		//
-		Assertions.assertDoesNotThrow(() -> actionPerformed(instance, actionEvent));
+		Assertions.assertDoesNotThrow(() -> actionPerformed(instance, actionEvent1));
 		//
 		final JTextComponent jtcUrl = new JTextField();
 		//
 		FieldUtils.writeDeclaredField(instance, "jtcUrl", jtcUrl, true);
 		//
-		Assertions.assertDoesNotThrow(() -> actionPerformed(instance, actionEvent));
+		Assertions.assertDoesNotThrow(() -> actionPerformed(instance, actionEvent1));
 		//
 		setText(jtcUrl, " ");
 		//
-		Assertions.assertDoesNotThrow(() -> actionPerformed(instance, actionEvent));
+		Assertions.assertDoesNotThrow(() -> actionPerformed(instance, actionEvent1));
 		//
 		final AbstractButton abCopyText = new JButton();
 		//
 		FieldUtils.writeDeclaredField(instance, "abCopyText", abCopyText, true);
 		//
 		Assertions.assertDoesNotThrow(() -> actionPerformed(instance, new ActionEvent(abCopyText, 0, null)));
+		//
+		final DefaultComboBoxModel<Object> dcbm = new DefaultComboBoxModel<>(new String[] { "ja" });
+		//
+		final JComboBox<?> jcbLanaguageTag = new JComboBox<>(dcbm);
+		//
+		FieldUtils.writeDeclaredField(instance, "jcbLanaguageTag", jcbLanaguageTag, true);
+		//
+		final ActionEvent actionEvent2 = new ActionEvent(jcbLanaguageTag, 0, null);
+		//
+		Assertions.assertDoesNotThrow(() -> actionPerformed(instance, actionEvent2));
+		//
+		dcbm.removeAllElements();
+		//
+		dcbm.addElement("en");
+		//
+		Assertions.assertDoesNotThrow(() -> actionPerformed(instance, actionEvent2));
+		//
+		dcbm.removeAllElements();
+		//
+		dcbm.addElement("zh-Hans-HK");
+		//
+		FieldUtils.writeDeclaredField(instance, "jlLanguageTag", new JLabel(), true);
+		//
+		Assertions.assertDoesNotThrow(() -> actionPerformed(instance, actionEvent2));
 		//
 	}
 

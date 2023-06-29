@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.EventObject;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
@@ -101,6 +102,8 @@ public class OcrGui extends JFrame implements ActionListener {
 
 	private transient ComboBoxModel<?> cbmLanaguageTag = null;
 
+	private JComboBox<?> jcbLanaguageTag = null;
+
 	@Note("File")
 	private AbstractButton abFile = null;
 
@@ -108,6 +111,8 @@ public class OcrGui extends JFrame implements ActionListener {
 	private AbstractButton abUrl = null;
 
 	private AbstractButton abCopyText = null;
+
+	private JLabel jlLanguageTag = null;
 
 	private transient Ocr ocr = null;
 
@@ -139,6 +144,8 @@ public class OcrGui extends JFrame implements ActionListener {
 		//
 		testAndAccept(Objects::nonNull, getAvailableRecognizerLanguageTags(o), dcbm::addAll);
 		//
+		testAndAccept(x -> containsKey(map, x), "languageTag", x -> dcbm.setSelectedItem(get(map, "languageTag")));
+		//
 		final String wrap = "wrap";
 		//
 		final LayoutManager lm = isRootPaneCheckingEnabled() ? getLayout(getContentPane()) : getLayout();
@@ -147,13 +154,17 @@ public class OcrGui extends JFrame implements ActionListener {
 		//
 		final BiPredicate<Component, Object> biPredicate = Predicates.biAlways(isGui, null);
 		//
+		(jcbLanaguageTag = new JComboBox<>(cbmLanaguageTag = dcbm)).addActionListener(this);
+		//
+		testAndAccept(predicate, jcbLanaguageTag, this::add);
+		//
 		if (isMigLayout) {
 			//
-			testAndAccept(biPredicate, new JComboBox<>(cbmLanaguageTag = dcbm), wrap, this::add);
+			testAndAccept(biPredicate, jlLanguageTag = new JLabel(), wrap, this::add);
 			//
 		} // if
 			//
-		testAndAccept(x -> containsKey(map, x), "languageTag", x -> dcbm.setSelectedItem(get(map, "languageTag")));
+		actionPerformed(new ActionEvent(jcbLanaguageTag, 0, null));
 		//
 		// File
 		//
@@ -163,8 +174,8 @@ public class OcrGui extends JFrame implements ActionListener {
 		//
 		if (isMigLayout) {
 			//
-			testAndAccept(biPredicate, jtcFile = new JTextField(), String.format("%1$s,wmin %2$spx", growx, 200),
-					this::add);
+			testAndAccept(biPredicate, jtcFile = new JTextField(),
+					String.format("%1$s,wmin %2$spx,span %3$s", growx, 200, 2), this::add);
 			//
 		} // if
 			//
@@ -182,7 +193,8 @@ public class OcrGui extends JFrame implements ActionListener {
 		//
 		if (isMigLayout) {
 			//
-			testAndAccept(biPredicate, this.jtcUrl = new JTextField(toString(get(map, "url"))), growx, this::add);
+			testAndAccept(biPredicate, this.jtcUrl = new JTextField(toString(get(map, "url"))),
+					String.format("%1$s,span %2$s", growx, 2), this::add);
 			//
 		} // if
 			//
@@ -196,7 +208,8 @@ public class OcrGui extends JFrame implements ActionListener {
 		//
 		if (isMigLayout) {
 			//
-			testAndAccept(biPredicate, jtcText = new JTextField(), growx, this::add);
+			testAndAccept(biPredicate, jtcText = new JTextField(), String.format("%1$s,span %2$s", growx, 2),
+					this::add);
 			//
 		} // if
 			//
@@ -438,8 +451,54 @@ public class OcrGui extends JFrame implements ActionListener {
 			//
 			actionPerformedAbCopyText();
 			//
+		} else if (Objects.equals(source, jcbLanaguageTag)) {
+			//
+			final Locale locale = testAndApply(Objects::nonNull,
+					toString(jcbLanaguageTag != null ? jcbLanaguageTag.getSelectedItem() : null),
+					Locale::forLanguageTag, null);
+			//
+			if (locale != null) {
+				//
+				final String displayLanguage1 = locale.getDisplayLanguage();
+				//
+				final StringBuilder sb = new StringBuilder(StringUtils.defaultIfBlank(displayLanguage1, ""));
+				//
+				final String displayLanguage2 = locale.getDisplayLanguage(locale);
+				//
+				if (StringUtils.isNotBlank(displayLanguage2)
+						&& !StringUtils.equalsIgnoreCase(displayLanguage1, displayLanguage2)) {
+					//
+					sb.append('/');
+					//
+					sb.append(displayLanguage2);
+					//
+				} // if
+					//
+				final String displayScript = locale.getDisplayScript(locale);
+				//
+				if (StringUtils.isNotBlank(displayScript)) {
+					//
+					sb.append(' ');
+					//
+					sb.append('(');
+					//
+					sb.append(displayScript);
+					//
+					sb.append(')');
+					//
+				} // if
+					//
+				if (jlLanguageTag != null) {
+					//
+					jlLanguageTag.setText(toString(sb));
+					//
+				} // if
+					//
+			} // if
+				//
 		} // if
 			//
+
 	}
 
 	private static boolean isUnderDebugOrMaven() {
