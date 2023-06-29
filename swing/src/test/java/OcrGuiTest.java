@@ -63,15 +63,15 @@ import ocr.Ocr;
 
 class OcrGuiTest {
 
-	private static Method METHOD_INIT, METHOD_GET_SELECTED_ITEM, METHOD_GET_OCR_TEXT, METHOD_GET_CLASS,
-			METHOD_TO_STRING, METHOD_GET_CLASS_NAME1, METHOD_GET_CLASS_NAME2, METHOD_GET_ABSOLUTE_PATH, METHOD_SET_TEXT,
-			METHOD_TEST_AND_ACCEPT3, METHOD_TEST_AND_ACCEPT4, METHOD_STREAM, METHOD_FILTER, METHOD_TO_LIST,
-			METHOD_GET_NAME_MEMBER, METHOD_GET_NAME_CLASS, METHOD_GET_LAYOUT, METHOD_OPEN_STREAM, METHOD_TEST_AND_APPLY,
-			METHOD_CREATE_PROPERTIES, METHOD_SHOW_EXCEPTION_ERROR_OR_PRINT_STACK_TRACE, METHOD_ADD_ACTION_LISTENER,
-			METHOD_GET_SYSTEM_CLIP_BOARD, METHOD_SET_CONTENTS, METHOD_IS_RAISE_THROWABLE_ONLY, METHOD_MAP,
-			METHOD_FOR_NAME, METHOD_GET_RESOURCE_AS_STREAM, METHOD_PARSE, METHOD_GET_METHOD,
-			METHOD_IS_UNDER_DEBUG_OR_MAVEN, METHOD_GET_AVAILABLE_RECOGNIZER_LANGUAGE_TAGS,
-			METHOD_IS_ASSIGNABLE_FROM = null;
+	private static Method METHOD_INIT, METHOD_GET_SELECTED_ITEM_COMBO_BOX_MODEL, METHOD_GET_SELECTED_ITEM_J_COMBO_BOX,
+			METHOD_GET_OCR_TEXT, METHOD_GET_CLASS, METHOD_TO_STRING, METHOD_GET_CLASS_NAME1, METHOD_GET_CLASS_NAME2,
+			METHOD_GET_ABSOLUTE_PATH, METHOD_SET_TEXT, METHOD_TEST_AND_ACCEPT3, METHOD_TEST_AND_ACCEPT4, METHOD_STREAM,
+			METHOD_FILTER, METHOD_TO_LIST, METHOD_GET_NAME_MEMBER, METHOD_GET_NAME_CLASS, METHOD_GET_LAYOUT,
+			METHOD_OPEN_STREAM, METHOD_TEST_AND_APPLY, METHOD_CREATE_PROPERTIES,
+			METHOD_SHOW_EXCEPTION_ERROR_OR_PRINT_STACK_TRACE, METHOD_ADD_ACTION_LISTENER, METHOD_GET_SYSTEM_CLIP_BOARD,
+			METHOD_SET_CONTENTS, METHOD_IS_RAISE_THROWABLE_ONLY, METHOD_MAP, METHOD_FOR_NAME,
+			METHOD_GET_RESOURCE_AS_STREAM, METHOD_PARSE, METHOD_GET_METHOD, METHOD_IS_UNDER_DEBUG_OR_MAVEN,
+			METHOD_GET_AVAILABLE_RECOGNIZER_LANGUAGE_TAGS, METHOD_IS_ASSIGNABLE_FROM = null;
 
 	@BeforeAll
 	static void beforeAll() throws ReflectiveOperationException {
@@ -80,7 +80,11 @@ class OcrGuiTest {
 		//
 		(METHOD_INIT = clz.getDeclaredMethod("init", Map.class)).setAccessible(true);
 		//
-		(METHOD_GET_SELECTED_ITEM = clz.getDeclaredMethod("getSelectedItem", ComboBoxModel.class)).setAccessible(true);
+		(METHOD_GET_SELECTED_ITEM_COMBO_BOX_MODEL = clz.getDeclaredMethod("getSelectedItem", ComboBoxModel.class))
+				.setAccessible(true);
+		//
+		(METHOD_GET_SELECTED_ITEM_J_COMBO_BOX = clz.getDeclaredMethod("getSelectedItem", JComboBox.class))
+				.setAccessible(true);
 		//
 		(METHOD_GET_OCR_TEXT = clz.getDeclaredMethod("getOcrText", Ocr.class, String.class, byte[].class))
 				.setAccessible(true);
@@ -363,13 +367,23 @@ class OcrGuiTest {
 	@Test
 	void testGetSelectedItem() throws Throwable {
 		//
+		Assertions.assertNull(getSelectedItem((JComboBox<?>) null));
+		//
 		Assertions.assertNull(getSelectedItem(new DefaultComboBoxModel<>()));
 		//
 	}
 
 	private static Object getSelectedItem(final ComboBoxModel<?> instance) throws Throwable {
 		try {
-			return (Object) METHOD_GET_SELECTED_ITEM.invoke(null, instance);
+			return (Object) METHOD_GET_SELECTED_ITEM_COMBO_BOX_MODEL.invoke(null, instance);
+		} catch (final InvocationTargetException e) {
+			throw e.getTargetException();
+		}
+	}
+
+	private static Object getSelectedItem(final JComboBox<?> instance) throws Throwable {
+		try {
+			return (Object) METHOD_GET_SELECTED_ITEM_J_COMBO_BOX.invoke(null, instance);
 		} catch (final InvocationTargetException e) {
 			throw e.getTargetException();
 		}

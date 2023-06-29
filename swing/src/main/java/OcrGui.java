@@ -453,8 +453,7 @@ public class OcrGui extends JFrame implements ActionListener {
 			//
 		} else if (Objects.equals(source, jcbLanaguageTag)) {
 			//
-			final Locale locale = testAndApply(Objects::nonNull,
-					toString(jcbLanaguageTag != null ? jcbLanaguageTag.getSelectedItem() : null),
+			final Locale locale = testAndApply(Objects::nonNull, toString(getSelectedItem(jcbLanaguageTag)),
 					Locale::forLanguageTag, null);
 			//
 			if (locale != null) {
@@ -698,6 +697,10 @@ public class OcrGui extends JFrame implements ActionListener {
 	}
 
 	private static Object getSelectedItem(final ComboBoxModel<?> instance) {
+		return instance != null ? instance.getSelectedItem() : null;
+	}
+
+	private static Object getSelectedItem(final JComboBox<?> instance) {
 		return instance != null ? instance.getSelectedItem() : null;
 	}
 
