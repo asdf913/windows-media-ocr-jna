@@ -487,12 +487,8 @@ public class OcrGui extends JFrame implements ActionListener {
 					//
 				} // if
 					//
-				if (jlLanguageTag != null) {
-					//
-					jlLanguageTag.setText(toString(sb));
-					//
-				} // if
-					//
+				setText(jlLanguageTag, toString(sb));
+				//
 			} // if
 				//
 		} // if
@@ -717,6 +713,12 @@ public class OcrGui extends JFrame implements ActionListener {
 	}
 
 	private static void setText(final JTextComponent instance, final String text) {
+		if (instance != null) {
+			instance.setText(text);
+		}
+	}
+
+	private static void setText(final JLabel instance, final String text) {
 		if (instance != null) {
 			instance.setText(text);
 		}
