@@ -74,7 +74,7 @@ class OcrGuiTest {
 			METHOD_GET_SYSTEM_CLIP_BOARD, METHOD_SET_CONTENTS, METHOD_IS_RAISE_THROWABLE_ONLY, METHOD_MAP,
 			METHOD_FOR_NAME, METHOD_GET_RESOURCE_AS_STREAM, METHOD_PARSE, METHOD_GET_METHOD,
 			METHOD_IS_UNDER_DEBUG_OR_MAVEN, METHOD_GET_AVAILABLE_RECOGNIZER_LANGUAGE_TAGS, METHOD_IS_ASSIGNABLE_FROM,
-			METHOD_FILTER_STACK_TRACE, METHOD_OPEN_CONNECTION = null;
+			METHOD_FILTER_STACK_TRACE, METHOD_OPEN_CONNECTION, METHOD_GET_INPUT_STREAM = null;
 
 	@BeforeAll
 	static void beforeAll() throws ReflectiveOperationException {
@@ -168,6 +168,8 @@ class OcrGuiTest {
 				.setAccessible(true);
 		//
 		(METHOD_OPEN_CONNECTION = clz.getDeclaredMethod("openConnection", URL.class)).setAccessible(true);
+		//
+		(METHOD_GET_INPUT_STREAM = clz.getDeclaredMethod("getInputStream", URLConnection.class)).setAccessible(true);
 		//
 	}
 
@@ -1141,6 +1143,31 @@ class OcrGuiTest {
 				return null;
 			} else if (obj instanceof URLConnection) {
 				return (URLConnection) obj;
+			}
+			throw new Throwable(toString(getClass(obj)));
+		} catch (final InvocationTargetException e) {
+			throw e.getTargetException();
+		}
+	}
+
+	@Test
+	void testGetInputStream() throws Throwable {
+		//
+		try (final InputStream is = getInputStream(openConnection(new File("pom.xml").toURI().toURL()))) {
+			//
+			Assertions.assertNotNull(is);
+			//
+		} // try
+			//
+	}
+
+	private static InputStream getInputStream(final URLConnection instance) throws Throwable {
+		try {
+			final Object obj = METHOD_GET_INPUT_STREAM.invoke(null, instance);
+			if (obj == null) {
+				return null;
+			} else if (obj instanceof InputStream) {
+				return (InputStream) obj;
 			}
 			throw new Throwable(toString(getClass(obj)));
 		} catch (final InvocationTargetException e) {

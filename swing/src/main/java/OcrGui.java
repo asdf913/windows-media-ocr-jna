@@ -512,7 +512,7 @@ public class OcrGui extends JFrame implements ActionListener {
 			//
 		}
 		//
-		try (final InputStream is = httpURLConnection != null ? httpURLConnection.getInputStream() : null) {
+		try (final InputStream is = getInputStream(httpURLConnection)) {
 			//
 			final Map<String, List<String>> headerFields = httpURLConnection != null
 					? httpURLConnection.getHeaderFields()
@@ -539,6 +539,10 @@ public class OcrGui extends JFrame implements ActionListener {
 
 	private static URLConnection openConnection(final URL instance) throws IOException {
 		return instance != null ? instance.openConnection() : null;
+	}
+
+	private static InputStream getInputStream(final URLConnection instance) throws IOException {
+		return instance != null ? instance.getInputStream() : null;
 	}
 
 	private static <T> T cast(final Class<T> clz, final Object value) {
