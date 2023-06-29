@@ -483,7 +483,7 @@ public class OcrGui extends JFrame implements ActionListener {
 			//
 		} catch (final Throwable e) {
 			//
-			final StackTraceElement[] stes = e != null ? e.getStackTrace() : null;
+			final StackTraceElement[] stes = getStackTrace(e);
 			//
 			StackTraceElement ste = null;
 			//
@@ -526,6 +526,10 @@ public class OcrGui extends JFrame implements ActionListener {
 			//
 		} // try
 			//
+	}
+
+	private static StackTraceElement[] getStackTrace(final Throwable instance) {
+		return instance != null ? instance.getStackTrace() : null;
 	}
 
 	private void actionPerformedAbCopyText() {
