@@ -21,6 +21,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
@@ -45,8 +46,11 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.WindowConstants;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.text.JTextComponent;
 
 import org.apache.bcel.classfile.ClassParser;
@@ -114,6 +118,8 @@ public class OcrGui extends JFrame implements ActionListener {
 	private AbstractButton abCopyText = null;
 
 	private JLabel jlLanguageTag = null;
+
+	private DefaultTableModel dtmResponseHeaders = null;
 
 	private transient Ocr ocr = null;
 
@@ -219,6 +225,17 @@ public class OcrGui extends JFrame implements ActionListener {
 		if (isMigLayout) {
 			//
 			testAndAccept(biPredicate, abCopyText = new JButton("Copy"), String.join(",", wrap, growx), this::add);
+			//
+		} // if
+			//
+		testAndAccept(predicate, new JLabel("HTTP Response Header(s)"), this::add);
+		//
+		if (isMigLayout) {
+			//
+			testAndAccept(biPredicate,
+					new JScrollPane(
+							new JTable(dtmResponseHeaders = new DefaultTableModel(new Object[] { "Key", "Value" }, 0))),
+					String.format("span %1$s", 2), this::add);
 			//
 		} // if
 			//
@@ -473,13 +490,44 @@ public class OcrGui extends JFrame implements ActionListener {
 
 	private void actionPerformedAbUrl() {
 		//
-		final String languageTag = toString(getSelectedItem(cbmLanaguageTag));
-		//
-		try (final InputStream is = openStream(
-				testAndApply(StringUtils::isNotBlank, getText(jtcUrl), URL::new, null))) {
+		for (int i = (dtmResponseHeaders != null ? dtmResponseHeaders.getRowCount() : 0) - 1; i >= 0; i--) {
 			//
-			setText(jtcText,
-					getOcrText(getOcr(), languageTag, testAndApply(Objects::nonNull, is, IOUtils::toByteArray, null)));
+			dtmResponseHeaders.removeRow(i);
+			//
+		} // for
+			//
+		URL url = null;
+		//
+		HttpURLConnection httpURLConnection = null;
+		//
+		try {
+			//
+			url = testAndApply(StringUtils::isNotBlank, getText(jtcUrl), URL::new, null);
+			//
+			httpURLConnection = cast(HttpURLConnection.class, url != null ? url.openConnection() : null);
+			//
+		} catch (final IOException e) {
+			//
+			filterStackTrace(e, OcrGui.class);
+			//
+			showExceptionOrErrorOrPrintStackTrace(LOG, e);
+			//
+		}
+		//
+		try (final InputStream is = httpURLConnection != null ? httpURLConnection.getInputStream() : null) {
+			//
+			final Map<String, List<String>> headerFields = httpURLConnection != null
+					? httpURLConnection.getHeaderFields()
+					: null;
+			//
+			if (headerFields != null) {
+				//
+				headerFields.forEach((k, v) -> dtmResponseHeaders.addRow(new Object[] { k, v }));
+				//
+			} // if
+				//
+			setText(jtcText, getOcrText(getOcr(), toString(getSelectedItem(cbmLanaguageTag)),
+					testAndApply(Objects::nonNull, is, IOUtils::toByteArray, null)));
 			//
 		} catch (final Throwable e) {
 			//
@@ -489,6 +537,10 @@ public class OcrGui extends JFrame implements ActionListener {
 			//
 		} // try
 			//
+	}
+
+	private static <T> T cast(final Class<T> clz, final Object value) {
+		return clz != null && clz.isInstance(value) ? clz.cast(value) : null;
 	}
 
 	private static void filterStackTrace(final Throwable throwable, final Class<?> clz) {
