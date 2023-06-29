@@ -464,8 +464,8 @@ public class OcrGui extends JFrame implements ActionListener {
 				//
 				final String displayLanguage2 = locale.getDisplayLanguage(locale);
 				//
-				if (StringUtils.isNotBlank(displayLanguage2)
-						&& !StringUtils.equalsIgnoreCase(displayLanguage1, displayLanguage2)) {
+				if (Boolean.logicalAnd(StringUtils.isNotBlank(displayLanguage2),
+						!StringUtils.equalsIgnoreCase(displayLanguage1, displayLanguage2))) {
 					//
 					sb.append('/');
 					//
