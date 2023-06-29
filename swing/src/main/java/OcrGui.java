@@ -23,6 +23,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.EventObject;
@@ -496,15 +497,12 @@ public class OcrGui extends JFrame implements ActionListener {
 			//
 		} // for
 			//
-		URL url = null;
-		//
 		HttpURLConnection httpURLConnection = null;
 		//
 		try {
 			//
-			url = testAndApply(StringUtils::isNotBlank, getText(jtcUrl), URL::new, null);
-			//
-			httpURLConnection = cast(HttpURLConnection.class, url != null ? url.openConnection() : null);
+			httpURLConnection = cast(HttpURLConnection.class,
+					openConnection(testAndApply(StringUtils::isNotBlank, getText(jtcUrl), URL::new, null)));
 			//
 		} catch (final IOException e) {
 			//
@@ -537,6 +535,10 @@ public class OcrGui extends JFrame implements ActionListener {
 			//
 		} // try
 			//
+	}
+
+	private static URLConnection openConnection(final URL instance) throws IOException {
+		return instance != null ? instance.openConnection() : null;
 	}
 
 	private static <T> T cast(final Class<T> clz, final Object value) {

@@ -14,6 +14,8 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -72,7 +74,7 @@ class OcrGuiTest {
 			METHOD_GET_SYSTEM_CLIP_BOARD, METHOD_SET_CONTENTS, METHOD_IS_RAISE_THROWABLE_ONLY, METHOD_MAP,
 			METHOD_FOR_NAME, METHOD_GET_RESOURCE_AS_STREAM, METHOD_PARSE, METHOD_GET_METHOD,
 			METHOD_IS_UNDER_DEBUG_OR_MAVEN, METHOD_GET_AVAILABLE_RECOGNIZER_LANGUAGE_TAGS, METHOD_IS_ASSIGNABLE_FROM,
-			METHOD_FILTER_STACK_TRACE = null;
+			METHOD_FILTER_STACK_TRACE, METHOD_OPEN_CONNECTION = null;
 
 	@BeforeAll
 	static void beforeAll() throws ReflectiveOperationException {
@@ -164,6 +166,8 @@ class OcrGuiTest {
 		//
 		(METHOD_FILTER_STACK_TRACE = clz.getDeclaredMethod("filterStackTrace", Throwable.class, Class.class))
 				.setAccessible(true);
+		//
+		(METHOD_OPEN_CONNECTION = clz.getDeclaredMethod("openConnection", URL.class)).setAccessible(true);
 		//
 	}
 
@@ -1119,6 +1123,26 @@ class OcrGuiTest {
 	private static void filterStackTrace(final Throwable throwable, final Class<?> clz) throws Throwable {
 		try {
 			METHOD_FILTER_STACK_TRACE.invoke(null, throwable, clz);
+		} catch (final InvocationTargetException e) {
+			throw e.getTargetException();
+		}
+	}
+
+	@Test
+	void testOpenConnection() throws Throwable {
+		//
+		Assertions.assertNotNull(openConnection(new File("pom.xml").toURI().toURL()));
+	}
+
+	private static URLConnection openConnection(final URL instance) throws Throwable {
+		try {
+			final Object obj = METHOD_OPEN_CONNECTION.invoke(null, instance);
+			if (obj == null) {
+				return null;
+			} else if (obj instanceof URLConnection) {
+				return (URLConnection) obj;
+			}
+			throw new Throwable(toString(getClass(obj)));
 		} catch (final InvocationTargetException e) {
 			throw e.getTargetException();
 		}
