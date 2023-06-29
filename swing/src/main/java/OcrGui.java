@@ -551,7 +551,7 @@ public class OcrGui extends JFrame implements ActionListener {
 		//
 		for (int i = (stes != null ? stes.length : 0) - 1; i >= 0; i--) {
 			//
-			if (Objects.equals(clz, forName(getClassName(stes[i])))) {
+			if (Objects.equals(clz, forName(getClassName(stes != null ? stes[i] : null)))) {
 				//
 				index = Integer.valueOf(i);
 				//
