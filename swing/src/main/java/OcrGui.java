@@ -473,20 +473,9 @@ public class OcrGui extends JFrame implements ActionListener {
 					//
 				} // if
 					//
-				final String displayScript = locale.getDisplayScript(locale);
+				testAndAccept(StringUtils::isNotBlank, locale.getDisplayScript(locale),
+						x -> sb.append(String.format(" (%1$s)", x)));
 				//
-				if (StringUtils.isNotBlank(displayScript)) {
-					//
-					sb.append(' ');
-					//
-					sb.append('(');
-					//
-					sb.append(displayScript);
-					//
-					sb.append(')');
-					//
-				} // if
-					//
 				setText(jlLanguageTag, toString(sb));
 				//
 			} // if
