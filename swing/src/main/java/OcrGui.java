@@ -485,19 +485,11 @@ public class OcrGui extends JFrame implements ActionListener {
 			//
 			final StackTraceElement[] stes = getStackTrace(e);
 			//
-			StackTraceElement ste = null;
-			//
 			Integer index = null;
 			//
 			for (int i = (stes != null ? stes.length : 0) - 1; i > 0; i--) {
 				//
-				if ((ste = stes[i]) == null) {
-					//
-					continue;
-					//
-				} // if
-					//
-				if (Objects.equals(OcrGui.class, forName(getClassName(ste)))) {
+				if (Objects.equals(OcrGui.class, forName(getClassName(stes[i])))) {
 					//
 					index = Integer.valueOf(i);
 					//
