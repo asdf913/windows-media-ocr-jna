@@ -453,29 +453,8 @@ public class OcrGui extends JFrame implements ActionListener {
 			//
 		} else if (Objects.equals(source, jcbLanaguageTag)) {
 			//
-			final Locale locale = testAndApply(Objects::nonNull, toString(getSelectedItem(jcbLanaguageTag)),
-					Locale::forLanguageTag, null);
+			actionPerformeJcbLanaguageTag();
 			//
-			if (locale != null) {
-				//
-				final String displayLanguage1 = locale.getDisplayLanguage();
-				//
-				final StringBuilder sb = new StringBuilder(StringUtils.defaultIfBlank(displayLanguage1, ""));
-				//
-				final String displayLanguage2 = locale.getDisplayLanguage(locale);
-				//
-				testAndAccept(
-						Predicates.always(Boolean.logicalAnd(StringUtils.isNotBlank(displayLanguage2),
-								!StringUtils.equalsIgnoreCase(displayLanguage1, displayLanguage2)), null),
-						displayLanguage2, x -> sb.append(StringUtils.joinWith("", '/', x)));
-				//
-				testAndAccept(StringUtils::isNotBlank, locale.getDisplayScript(locale),
-						x -> sb.append(String.format(" (%1$s)", x)));
-				//
-				setText(jlLanguageTag, toString(sb));
-				//
-			} // if
-				//
 		} // if
 			//
 
@@ -532,6 +511,33 @@ public class OcrGui extends JFrame implements ActionListener {
 		if (!isUnderDebugOrMaven()) {
 			//
 			setContents(getSystemClipboard(toolkit), new StringSelection(getText(jtcText)), null);
+			//
+		} // if
+			//
+	}
+
+	private void actionPerformeJcbLanaguageTag() {
+		//
+		final Locale locale = testAndApply(Objects::nonNull, toString(getSelectedItem(jcbLanaguageTag)),
+				Locale::forLanguageTag, null);
+		//
+		if (locale != null) {
+			//
+			final String displayLanguage1 = locale.getDisplayLanguage();
+			//
+			final StringBuilder sb = new StringBuilder(StringUtils.defaultIfBlank(displayLanguage1, ""));
+			//
+			final String displayLanguage2 = locale.getDisplayLanguage(locale);
+			//
+			testAndAccept(
+					Predicates.always(Boolean.logicalAnd(StringUtils.isNotBlank(displayLanguage2),
+							!StringUtils.equalsIgnoreCase(displayLanguage1, displayLanguage2)), null),
+					displayLanguage2, x -> sb.append(StringUtils.joinWith("", '/', x)));
+			//
+			testAndAccept(StringUtils::isNotBlank, locale.getDisplayScript(locale),
+					x -> sb.append(String.format(" (%1$s)", x)));
+			//
+			setText(jlLanguageTag, toString(sb));
 			//
 		} // if
 			//
