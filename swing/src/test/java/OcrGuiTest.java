@@ -14,7 +14,6 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
-import java.net.URL;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -67,7 +66,7 @@ class OcrGuiTest {
 			METHOD_GET_SELECTED_ITEM_J_COMBO_BOX, METHOD_GET_OCR_TEXT, METHOD_GET_CLASS, METHOD_TO_STRING,
 			METHOD_GET_CLASS_NAME1, METHOD_GET_CLASS_NAME2, METHOD_GET_ABSOLUTE_PATH, METHOD_SET_TEXT,
 			METHOD_TEST_AND_ACCEPT3, METHOD_TEST_AND_ACCEPT4, METHOD_STREAM, METHOD_FILTER, METHOD_TO_LIST,
-			METHOD_GET_NAME_MEMBER, METHOD_GET_NAME_CLASS, METHOD_GET_LAYOUT, METHOD_OPEN_STREAM, METHOD_TEST_AND_APPLY,
+			METHOD_GET_NAME_MEMBER, METHOD_GET_NAME_CLASS, METHOD_GET_LAYOUT, METHOD_TEST_AND_APPLY,
 			METHOD_CREATE_PROPERTIES, METHOD_SHOW_EXCEPTION_ERROR_OR_PRINT_STACK_TRACE, METHOD_ADD_ACTION_LISTENER,
 			METHOD_GET_SYSTEM_CLIP_BOARD, METHOD_SET_CONTENTS, METHOD_IS_RAISE_THROWABLE_ONLY, METHOD_MAP,
 			METHOD_FOR_NAME, METHOD_GET_RESOURCE_AS_STREAM, METHOD_PARSE, METHOD_GET_METHOD,
@@ -122,8 +121,6 @@ class OcrGuiTest {
 		(METHOD_GET_NAME_CLASS = clz.getDeclaredMethod("getName", Class.class)).setAccessible(true);
 		//
 		(METHOD_GET_LAYOUT = clz.getDeclaredMethod("getLayout", Container.class)).setAccessible(true);
-		//
-		(METHOD_OPEN_STREAM = clz.getDeclaredMethod("openStream", URL.class)).setAccessible(true);
 		//
 		(METHOD_TEST_AND_APPLY = clz.getDeclaredMethod("testAndApply", Predicate.class, Object.class,
 				FailableFunction.class, FailableFunction.class)).setAccessible(true);
@@ -716,27 +713,6 @@ class OcrGuiTest {
 				return null;
 			} else if (obj instanceof LayoutManager) {
 				return (LayoutManager) obj;
-			}
-			throw new Throwable(toString(getClass(obj)));
-		} catch (final InvocationTargetException e) {
-			throw e.getTargetException();
-		}
-	}
-
-	@Test
-	void testOpenStream() throws Throwable {
-		//
-		Assertions.assertNotNull(openStream(new File(".").toURI().toURL()));
-		//
-	}
-
-	private static InputStream openStream(final URL instance) throws Throwable {
-		try {
-			final Object obj = METHOD_OPEN_STREAM.invoke(null, instance);
-			if (obj == null) {
-				return null;
-			} else if (obj instanceof InputStream) {
-				return (InputStream) obj;
 			}
 			throw new Throwable(toString(getClass(obj)));
 		} catch (final InvocationTargetException e) {
