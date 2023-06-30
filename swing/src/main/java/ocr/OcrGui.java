@@ -446,63 +446,8 @@ public class OcrGui extends JFrame implements ActionListener {
 		//
 		if (Objects.equals(source, abFile)) {
 			//
-			final String languageTag = toString(getSelectedItem(cbmLanaguageTag));
+			actionPerformedAbFile();
 			//
-			final boolean isNotHeadLessAndisNotUnderDebugOrTest = Boolean.logicalAnd(!GraphicsEnvironment.isHeadless(),
-					!isUnderDebugOrMaven());
-			//
-			if (languageTag == null) {
-				//
-				if (isNotHeadLessAndisNotUnderDebugOrTest) {
-					//
-					JOptionPane.showMessageDialog(null, "Please select a Language Tag");
-					//
-				} // if
-					//
-				return;
-				//
-			} // if
-				//
-			final JFileChooser jfc = new JFileChooser(".");
-			//
-			File file = null;
-			//
-			if (isNotHeadLessAndisNotUnderDebugOrTest && jfc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-				//
-				file = jfc.getSelectedFile();
-				//
-			} // if
-				//
-			ContentInfo ci = null;
-			//
-			try {
-				//
-				if ((ci = testAndApply(OcrGui::exists, file, new ContentInfoUtil()::findMatch, null)) == null
-						|| !checkMimeTypePrimaryType(ci.getMimeType(), "image")) {
-					//
-					return;
-					//
-				} // if
-					//
-			} catch (final IOException | MimeTypeParseException e) {
-				//
-				showExceptionOrErrorOrPrintStackTrace(LOG, e);
-				//
-			} // try
-				//
-			setText(jtcFile, getAbsolutePath(file));
-			//
-			try {
-				//
-				setText(jtcText, getOcrText(getOcr(), languageTag,
-						testAndApply(Objects::nonNull, file, FileUtils::readFileToByteArray, null)));
-				//
-			} catch (final IOException e) {
-				//
-				showExceptionOrErrorOrPrintStackTrace(LOG, e);
-				//
-			} // try
-				//
 		} else if (Objects.equals(source, abUrl)) {
 			//
 			actionPerformedAbUrl();
@@ -528,6 +473,67 @@ public class OcrGui extends JFrame implements ActionListener {
 								"org.apache.maven.surefire.junitplatform.JUnitPlatformProvider")
 						.contains(getClassName(x)));
 		//
+	}
+
+	private void actionPerformedAbFile() {
+		//
+		final String languageTag = toString(getSelectedItem(cbmLanaguageTag));
+		//
+		final boolean isNotHeadLessAndisNotUnderDebugOrTest = Boolean.logicalAnd(!GraphicsEnvironment.isHeadless(),
+				!isUnderDebugOrMaven());
+		//
+		if (languageTag == null) {
+			//
+			if (isNotHeadLessAndisNotUnderDebugOrTest) {
+				//
+				JOptionPane.showMessageDialog(null, "Please select a Language Tag");
+				//
+			} // if
+				//
+			return;
+			//
+		} // if
+			//
+		final JFileChooser jfc = new JFileChooser(".");
+		//
+		File file = null;
+		//
+		if (isNotHeadLessAndisNotUnderDebugOrTest && jfc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+			//
+			file = jfc.getSelectedFile();
+			//
+		} // if
+			//
+		ContentInfo ci = null;
+		//
+		try {
+			//
+			if ((ci = testAndApply(OcrGui::exists, file, new ContentInfoUtil()::findMatch, null)) == null
+					|| !checkMimeTypePrimaryType(ci.getMimeType(), "image")) {
+				//
+				return;
+				//
+			} // if
+				//
+		} catch (final IOException | MimeTypeParseException e) {
+			//
+			showExceptionOrErrorOrPrintStackTrace(LOG, e);
+			//
+		} // try
+			//
+		setText(jtcFile, getAbsolutePath(file));
+		//
+		try {
+			//
+			setText(jtcText, getOcrText(getOcr(), languageTag,
+					testAndApply(Objects::nonNull, file, FileUtils::readFileToByteArray, null)));
+			//
+		} catch (final IOException e) {
+			//
+			showExceptionOrErrorOrPrintStackTrace(LOG, e);
+			//
+		} // try
+			//
 	}
 
 	private void actionPerformedAbUrl() {
