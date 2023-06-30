@@ -477,7 +477,7 @@ public class OcrGui extends JFrame implements ActionListener {
 			//
 			try {
 				//
-				if ((ci = testAndApply(f -> exists(f), file, new ContentInfoUtil()::findMatch, null)) == null
+				if ((ci = testAndApply(OcrGui::exists, file, new ContentInfoUtil()::findMatch, null)) == null
 						|| !checkMimeTypePrimaryType(ci.getMimeType(), "image")) {
 					//
 					return;
