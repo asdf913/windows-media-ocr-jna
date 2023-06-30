@@ -566,8 +566,8 @@ public class OcrGui extends JFrame implements ActionListener {
 		//
 		final String primaryType = getPrimaryType(testAndApply(StringUtils::isNotBlank, mimeType, MimeType::new, null));
 		//
-		if (!StringUtils.equalsIgnoreCase(primaryType, mimeTypePrimaryType) && !GraphicsEnvironment.isHeadless()
-				&& !isUnderDebugOrMaven()) {
+		if (and(!StringUtils.equalsIgnoreCase(primaryType, mimeTypePrimaryType), !GraphicsEnvironment.isHeadless(),
+				!isUnderDebugOrMaven())) {
 			//
 			return JOptionPane
 					.showConfirmDialog(null,
@@ -578,6 +578,30 @@ public class OcrGui extends JFrame implements ActionListener {
 		} // if
 			//
 		return true;
+		//
+	}
+
+	private static boolean and(final boolean a, final boolean b, final boolean... bs) {
+		//
+		boolean result = a && b;
+		//
+		if (!result) {
+			//
+			return false;
+			//
+		} // if
+			//
+		for (int i = 0; bs != null && i < bs.length; i++) {
+			//
+			if (!(result &= bs[i])) {
+				//
+				return false;
+				//
+			} // if
+				//
+		} // for
+			//
+		return result;
 		//
 	}
 

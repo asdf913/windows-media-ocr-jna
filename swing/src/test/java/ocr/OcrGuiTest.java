@@ -82,7 +82,7 @@ class OcrGuiTest {
 			METHOD_IS_UNDER_DEBUG_OR_MAVEN, METHOD_GET_AVAILABLE_RECOGNIZER_LANGUAGE_TAGS, METHOD_IS_ASSIGNABLE_FROM,
 			METHOD_FILTER_STACK_TRACE, METHOD_OPEN_CONNECTION, METHOD_GET_INPUT_STREAM, METHOD_GET_KEY,
 			METHOD_GET_VALUE, METHOD_ENTRY_SET, METHOD_SORTED, METHOD_FOR_EACH, METHOD_GET_DECLARED_METHOD,
-			METHOD_CHECK_MIME_TYPE_PRIMARY_TYPE = null;
+			METHOD_CHECK_MIME_TYPE_PRIMARY_TYPE, METHOD_AND = null;
 
 	@BeforeAll
 	static void beforeAll() throws ReflectiveOperationException {
@@ -194,6 +194,8 @@ class OcrGuiTest {
 		//
 		(METHOD_CHECK_MIME_TYPE_PRIMARY_TYPE = clz.getDeclaredMethod("checkMimeTypePrimaryType", String.class,
 				String.class)).setAccessible(true);
+		//
+		(METHOD_AND = clz.getDeclaredMethod("and", Boolean.TYPE, Boolean.TYPE, boolean[].class)).setAccessible(true);
 		//
 	}
 
@@ -1384,6 +1386,31 @@ class OcrGuiTest {
 			throws Throwable {
 		try {
 			final Object obj = METHOD_CHECK_MIME_TYPE_PRIMARY_TYPE.invoke(null, mimeType, mimeTypePrimaryType);
+			if (obj instanceof Boolean) {
+				return ((Boolean) obj).booleanValue();
+			}
+			throw new Throwable(toString(getClass(obj)));
+		} catch (final InvocationTargetException e) {
+			throw e.getTargetException();
+		}
+	}
+
+	@Test
+	void testAnd() throws Throwable {
+		//
+		Assertions.assertFalse(and(true, false, null));
+		//
+		Assertions.assertTrue(and(true, true, null));
+		//
+		Assertions.assertTrue(and(true, true, true));
+		//
+		Assertions.assertFalse(and(true, true, false));
+		//
+	}
+
+	private static boolean and(final boolean a, final boolean b, final boolean... bs) throws Throwable {
+		try {
+			final Object obj = METHOD_AND.invoke(null, a, b, bs);
 			if (obj instanceof Boolean) {
 				return ((Boolean) obj).booleanValue();
 			}
