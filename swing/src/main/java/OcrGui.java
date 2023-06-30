@@ -508,6 +508,8 @@ public class OcrGui extends JFrame implements ActionListener {
 			//
 		} // for
 			//
+		setText(jtcText, null);
+		//
 		HttpURLConnection httpURLConnection = null;
 		//
 		try {
