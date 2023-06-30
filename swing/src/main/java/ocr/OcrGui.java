@@ -89,6 +89,9 @@ import org.apache.logging.log4j.Logger;
 import org.meeuw.functional.Predicates;
 import org.oxbow.swingbits.dialog.task.TaskDialogs;
 
+import com.j256.simplemagic.ContentInfo;
+import com.j256.simplemagic.ContentInfoUtil;
+
 import io.github.toolfactory.narcissus.Narcissus;
 import net.miginfocom.swing.MigLayout;
 
@@ -373,7 +376,7 @@ public class OcrGui extends JFrame implements ActionListener {
 		//
 		Properties properties = null;
 		//
-		try (final InputStream is = testAndApply(f -> f != null && f.exists() && f.isFile() && f.canRead(), file,
+		try (final InputStream is = testAndApply(f -> f != null && exists(f) && f.isFile() && f.canRead(), file,
 				FileInputStream::new, null)) {
 			//
 			if (is != null) {
@@ -390,6 +393,10 @@ public class OcrGui extends JFrame implements ActionListener {
 			//
 		return properties;
 		//
+	}
+
+	private static boolean exists(final File instance) {
+		return instance != null && instance.exists();
 	}
 
 	private static void showExceptionOrErrorOrPrintStackTrace(final Logger logger, final Throwable throwable) {
@@ -465,6 +472,23 @@ public class OcrGui extends JFrame implements ActionListener {
 				file = jfc.getSelectedFile();
 				//
 			} // if
+				//
+			ContentInfo ci = null;
+			//
+			try {
+				//
+				if ((ci = testAndApply(f -> exists(f), file, new ContentInfoUtil()::findMatch, null)) == null
+						|| !checkMimeTypePrimaryType(ci.getMimeType(), "image")) {
+					//
+					return;
+					//
+				} // if
+					//
+			} catch (final IOException | MimeTypeParseException e) {
+				//
+				showExceptionOrErrorOrPrintStackTrace(LOG, e);
+				//
+			} // try
 				//
 			setText(jtcFile, getAbsolutePath(file));
 			//
