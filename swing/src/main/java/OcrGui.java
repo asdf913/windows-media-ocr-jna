@@ -637,7 +637,7 @@ public class OcrGui extends JFrame implements ActionListener {
 		//
 		try {
 			//
-			if (isRaiseThrowableOnly(clz, clz != null ? clz.getDeclaredMethod("getSystemClipboard") : null)) {
+			if (isRaiseThrowableOnly(clz, getDeclaredMethod(clz, "getSystemClipboard"))) {
 				//
 				return;
 				//
@@ -655,6 +655,11 @@ public class OcrGui extends JFrame implements ActionListener {
 			//
 		} // if
 			//
+	}
+
+	private static Method getDeclaredMethod(final Class<?> instance, final String name,
+			final Class<?>... parameterTypes) throws NoSuchMethodException {
+		return instance != null ? instance.getDeclaredMethod(name, parameterTypes) : null;
 	}
 
 	private void actionPerformeJcbLanaguageTag() {

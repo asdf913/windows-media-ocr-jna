@@ -80,7 +80,7 @@ class OcrGuiTest {
 			METHOD_FOR_NAME, METHOD_GET_RESOURCE_AS_STREAM, METHOD_PARSE, METHOD_GET_METHOD,
 			METHOD_IS_UNDER_DEBUG_OR_MAVEN, METHOD_GET_AVAILABLE_RECOGNIZER_LANGUAGE_TAGS, METHOD_IS_ASSIGNABLE_FROM,
 			METHOD_FILTER_STACK_TRACE, METHOD_OPEN_CONNECTION, METHOD_GET_INPUT_STREAM, METHOD_GET_KEY,
-			METHOD_GET_VALUE, METHOD_ENTRY_SET, METHOD_SORTED, METHOD_FOR_EACH = null;
+			METHOD_GET_VALUE, METHOD_ENTRY_SET, METHOD_SORTED, METHOD_FOR_EACH, METHOD_GET_DECLARED_METHOD = null;
 
 	@BeforeAll
 	static void beforeAll() throws ReflectiveOperationException {
@@ -186,6 +186,9 @@ class OcrGuiTest {
 		(METHOD_SORTED = clz.getDeclaredMethod("sorted", Stream.class, Comparator.class)).setAccessible(true);
 		//
 		(METHOD_FOR_EACH = clz.getDeclaredMethod("forEach", Stream.class, Consumer.class)).setAccessible(true);
+		//
+		(METHOD_GET_DECLARED_METHOD = clz.getDeclaredMethod("getDeclaredMethod", Class.class, String.class,
+				Class[].class)).setAccessible(true);
 		//
 	}
 
@@ -1287,17 +1290,17 @@ class OcrGuiTest {
 	}
 
 	@Test
-	void testSorted() {
+	void testSorted() throws Throwable {
 		//
-		Assertions.assertDoesNotThrow(() -> sorted(null, null));
+		Assertions.assertNull(sorted(null, null));
 		//
-		Assertions.assertDoesNotThrow(() -> sorted(stream, null));
+		Assertions.assertNull(sorted(stream, null));
 		//
 		final Stream<?> stream = Stream.empty();
 		//
-		Assertions.assertDoesNotThrow(() -> sorted(stream, null));
+		Assertions.assertNull(sorted(stream, null));
 		//
-		Assertions.assertDoesNotThrow(() -> sorted(stream, (a, b) -> 0));
+		Assertions.assertNotNull(sorted(stream, (a, b) -> 0));
 		//
 	}
 
@@ -1332,6 +1335,28 @@ class OcrGuiTest {
 	private static <T> void forEach(final Stream<T> instance, final Consumer<? super T> action) throws Throwable {
 		try {
 			METHOD_FOR_EACH.invoke(null, instance, action);
+		} catch (final InvocationTargetException e) {
+			throw e.getTargetException();
+		}
+	}
+
+	@Test
+	void testGetDeclaredMethod() throws Throwable {
+		//
+		Assertions.assertNull(getDeclaredMethod(null, null));
+		//
+	}
+
+	private static Method getDeclaredMethod(final Class<?> instance, final String name,
+			final Class<?>... parameterTypes) throws Throwable {
+		try {
+			final Object obj = METHOD_GET_DECLARED_METHOD.invoke(null, instance, name, parameterTypes);
+			if (obj == null) {
+				return null;
+			} else if (obj instanceof Method) {
+				return (Method) obj;
+			}
+			throw new Throwable(toString(getClass(obj)));
 		} catch (final InvocationTargetException e) {
 			throw e.getTargetException();
 		}
