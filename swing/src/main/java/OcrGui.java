@@ -338,18 +338,29 @@ public class OcrGui extends JFrame implements ActionListener {
 
 	public static void main(final String[] args) {
 		//
-		final OcrGui instance = new OcrGui();
+		final boolean isHeadless = GraphicsEnvironment.isHeadless();
 		//
-		instance.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+		final OcrGui instance = isHeadless ? cast(OcrGui.class, Narcissus.allocateInstance(OcrGui.class))
+				: new OcrGui();
 		//
-		instance.setLayout(new MigLayout());
-		//
-		instance.init(createProperties(new File("OcrGui.properties")));
-		//
-		instance.pack();
-		//
-		instance.setVisible(true);
-		//
+		if (instance != null) {
+			//
+			instance.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+			//
+			instance.setLayout(new MigLayout());
+			//
+			instance.init(createProperties(new File("OcrGui.properties")));
+			//
+			if (Boolean.logicalAnd(!isHeadless, !isUnderDebugOrMaven())) {
+				//
+				instance.pack();
+				//
+				instance.setVisible(true);
+				//
+			} // if
+				//
+		} // if
+			//
 	}
 
 	private static Properties createProperties(final File file) {

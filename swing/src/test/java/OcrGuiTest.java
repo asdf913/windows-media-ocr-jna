@@ -284,6 +284,13 @@ class OcrGuiTest {
 	}
 
 	@Test
+	void testMain() {
+		//
+		Assertions.assertDoesNotThrow(() -> OcrGui.main(null));
+		//
+	}
+
+	@Test
 	void testCast() throws Throwable {
 		//
 		Assertions.assertNull(cast(null, null));
