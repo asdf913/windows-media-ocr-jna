@@ -546,7 +546,8 @@ public class OcrGui extends JFrame implements ActionListener {
 						testAndApply(StringUtils::isNotBlank, contentTypes.get(0), MimeType::new, null));
 				//
 				if (!StringUtils.equalsIgnoreCase(primaryType, "image") && JOptionPane.showConfirmDialog(null,
-						String.format("The \"Content-Type\" header return \"%1$s\".\nContinue?", primaryType),
+						String.format("The \"Content-Type\" header return \"%1$s\".%2$sContinue?", primaryType,
+								System.lineSeparator()),
 						"Confirm", JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) {
 					//
 					return;
