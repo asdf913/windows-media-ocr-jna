@@ -17,6 +17,7 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +53,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.meeuw.functional.Consumers;
 
 import com.google.common.base.Predicates;
 import com.google.common.reflect.Reflection;
@@ -74,7 +76,7 @@ class OcrGuiTest {
 			METHOD_GET_SYSTEM_CLIP_BOARD, METHOD_SET_CONTENTS, METHOD_IS_RAISE_THROWABLE_ONLY, METHOD_MAP,
 			METHOD_FOR_NAME, METHOD_GET_RESOURCE_AS_STREAM, METHOD_PARSE, METHOD_GET_METHOD,
 			METHOD_IS_UNDER_DEBUG_OR_MAVEN, METHOD_GET_AVAILABLE_RECOGNIZER_LANGUAGE_TAGS, METHOD_IS_ASSIGNABLE_FROM,
-			METHOD_FILTER_STACK_TRACE, METHOD_OPEN_CONNECTION, METHOD_GET_INPUT_STREAM = null;
+			METHOD_FILTER_STACK_TRACE, METHOD_OPEN_CONNECTION, METHOD_GET_INPUT_STREAM, METHOD_FOR_EACH = null;
 
 	@BeforeAll
 	static void beforeAll() throws ReflectiveOperationException {
@@ -171,6 +173,8 @@ class OcrGuiTest {
 		//
 		(METHOD_GET_INPUT_STREAM = clz.getDeclaredMethod("getInputStream", URLConnection.class)).setAccessible(true);
 		//
+		(METHOD_FOR_EACH = clz.getDeclaredMethod("forEach", Map.class, BiConsumer.class)).setAccessible(true);
+		//
 	}
 
 	private static class IH implements InvocationHandler {
@@ -205,6 +209,14 @@ class OcrGuiTest {
 			} else if (proxy instanceof Logger) {
 				//
 				if (Objects.equals(methodName, "error")) {
+					//
+					return null;
+					//
+				} // if
+					//
+			} else if (proxy instanceof Map) {
+				//
+				if (Objects.equals(methodName, "forEach")) {
 					//
 					return null;
 					//
@@ -1170,6 +1182,28 @@ class OcrGuiTest {
 				return (InputStream) obj;
 			}
 			throw new Throwable(toString(getClass(obj)));
+		} catch (final InvocationTargetException e) {
+			throw e.getTargetException();
+		}
+	}
+
+	@Test
+	void testForEach() {
+		//
+		Assertions.assertDoesNotThrow(() -> forEach(Reflection.newProxy(Map.class, ih), null));
+		//
+		final Map<?, ?> map = Collections.emptyMap();
+		//
+		Assertions.assertDoesNotThrow(() -> forEach(map, null));
+		//
+		Assertions.assertDoesNotThrow(() -> forEach(map, Consumers.biNop()));
+		//
+	}
+
+	private static <K, V> void forEach(final Map<K, V> instance, final BiConsumer<? super K, ? super V> action)
+			throws Throwable {
+		try {
+			METHOD_FOR_EACH.invoke(null, instance, action);
 		} catch (final InvocationTargetException e) {
 			throw e.getTargetException();
 		}

@@ -514,14 +514,8 @@ public class OcrGui extends JFrame implements ActionListener {
 		//
 		try (final InputStream is = getInputStream(httpURLConnection)) {
 			//
-			final Map<String, List<String>> headerFields = getHeaderFields(httpURLConnection);
+			forEach(getHeaderFields(httpURLConnection), (k, v) -> dtmResponseHeaders.addRow(new Object[] { k, v }));
 			//
-			if (headerFields != null) {
-				//
-				headerFields.forEach((k, v) -> dtmResponseHeaders.addRow(new Object[] { k, v }));
-				//
-			} // if
-				//
 			setText(jtcText, getOcrText(getOcr(), toString(getSelectedItem(cbmLanaguageTag)),
 					testAndApply(Objects::nonNull, is, IOUtils::toByteArray, null)));
 			//
@@ -532,6 +526,16 @@ public class OcrGui extends JFrame implements ActionListener {
 			showExceptionOrErrorOrPrintStackTrace(LOG, e);
 			//
 		} // try
+			//
+	}
+
+	private static <K, V> void forEach(final Map<K, V> instance, final BiConsumer<? super K, ? super V> action) {
+		//
+		if ((instance != null && action != null) || Proxy.isProxyClass(getClass(instance))) {
+			//
+			instance.forEach(action);
+			//
+		} // if
 			//
 	}
 
