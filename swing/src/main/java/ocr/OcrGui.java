@@ -44,6 +44,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import javax.activation.MimeType;
 import javax.swing.AbstractButton;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
@@ -531,10 +532,29 @@ public class OcrGui extends JFrame implements ActionListener {
 		//
 		try (final InputStream is = getInputStream(httpURLConnection)) {
 			//
-			forEach(sorted(stream(entrySet(getHeaderFields(httpURLConnection))),
-					(a, b) -> StringUtils.compare(getKey(a), getKey(b))),
+			final Map<String, List<String>> headerFields = getHeaderFields(httpURLConnection);
+			//
+			forEach(sorted(stream(entrySet(headerFields)), (a, b) -> StringUtils.compare(getKey(a), getKey(b))),
 					en -> dtmResponseHeaders.addRow(new Object[] { getKey(en), getValue(en) }));
 			//
+			final List<String> contentTypes = testAndApply(x -> containsKey(headerFields, x), "Content-Type",
+					x -> get(headerFields, x), null);
+			//
+			if (contentTypes != null && contentTypes.size() == 1) {
+				//
+				final String primaryType = getPrimaryType(
+						testAndApply(StringUtils::isNotBlank, contentTypes.get(0), MimeType::new, null));
+				//
+				if (!StringUtils.equalsIgnoreCase(primaryType, "image") && JOptionPane.showConfirmDialog(null,
+						String.format("The \"Content-Type\" header return \"%1$s\".\nContinue?", primaryType),
+						"Confirm", JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) {
+					//
+					return;
+					//
+				} // if
+					//
+			} // if
+				//
 			setText(jtcText, getOcrText(getOcr(), toString(getSelectedItem(cbmLanaguageTag)),
 					testAndApply(Objects::nonNull, is, IOUtils::toByteArray, null)));
 			//
@@ -546,6 +566,10 @@ public class OcrGui extends JFrame implements ActionListener {
 			//
 		} // try
 			//
+	}
+
+	private static String getPrimaryType(final MimeType instance) {
+		return instance != null ? instance.getPrimaryType() : null;
 	}
 
 	private static <K> K getKey(final Entry<K, ?> instance) {

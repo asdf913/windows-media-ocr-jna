@@ -34,6 +34,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import javax.activation.MimeType;
 import javax.swing.AbstractButton;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
@@ -81,7 +82,8 @@ class OcrGuiTest {
 			METHOD_FOR_NAME, METHOD_GET_RESOURCE_AS_STREAM, METHOD_PARSE, METHOD_GET_METHOD,
 			METHOD_IS_UNDER_DEBUG_OR_MAVEN, METHOD_GET_AVAILABLE_RECOGNIZER_LANGUAGE_TAGS, METHOD_IS_ASSIGNABLE_FROM,
 			METHOD_FILTER_STACK_TRACE, METHOD_OPEN_CONNECTION, METHOD_GET_INPUT_STREAM, METHOD_GET_KEY,
-			METHOD_GET_VALUE, METHOD_ENTRY_SET, METHOD_SORTED, METHOD_FOR_EACH, METHOD_GET_DECLARED_METHOD = null;
+			METHOD_GET_VALUE, METHOD_ENTRY_SET, METHOD_SORTED, METHOD_FOR_EACH, METHOD_GET_DECLARED_METHOD,
+			METHOD_GET_PRIMARY_TYPE = null;
 
 	@BeforeAll
 	static void beforeAll() throws ReflectiveOperationException {
@@ -190,6 +192,8 @@ class OcrGuiTest {
 		//
 		(METHOD_GET_DECLARED_METHOD = clz.getDeclaredMethod("getDeclaredMethod", Class.class, String.class,
 				Class[].class)).setAccessible(true);
+		//
+		(METHOD_GET_PRIMARY_TYPE = clz.getDeclaredMethod("getPrimaryType", MimeType.class)).setAccessible(true);
 		//
 	}
 
@@ -1356,6 +1360,29 @@ class OcrGuiTest {
 				return null;
 			} else if (obj instanceof Method) {
 				return (Method) obj;
+			}
+			throw new Throwable(toString(getClass(obj)));
+		} catch (final InvocationTargetException e) {
+			throw e.getTargetException();
+		}
+	}
+
+	@Test
+	void testGetPrimaryType() throws Throwable {
+		//
+		Assertions.assertNull(getPrimaryType(null));
+		//
+		Assertions.assertNull(getPrimaryType(cast(MimeType.class, Narcissus.allocateInstance(MimeType.class))));
+		//
+	}
+
+	private static String getPrimaryType(final MimeType instance) throws Throwable {
+		try {
+			final Object obj = METHOD_GET_PRIMARY_TYPE.invoke(null, instance);
+			if (obj == null) {
+				return null;
+			} else if (obj instanceof String) {
+				return (String) obj;
 			}
 			throw new Throwable(toString(getClass(obj)));
 		} catch (final InvocationTargetException e) {
