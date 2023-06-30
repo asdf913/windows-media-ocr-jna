@@ -34,7 +34,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import javax.activation.MimeType;
 import javax.swing.AbstractButton;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
@@ -83,7 +82,7 @@ class OcrGuiTest {
 			METHOD_IS_UNDER_DEBUG_OR_MAVEN, METHOD_GET_AVAILABLE_RECOGNIZER_LANGUAGE_TAGS, METHOD_IS_ASSIGNABLE_FROM,
 			METHOD_FILTER_STACK_TRACE, METHOD_OPEN_CONNECTION, METHOD_GET_INPUT_STREAM, METHOD_GET_KEY,
 			METHOD_GET_VALUE, METHOD_ENTRY_SET, METHOD_SORTED, METHOD_FOR_EACH, METHOD_GET_DECLARED_METHOD,
-			METHOD_GET_PRIMARY_TYPE = null;
+			METHOD_CHECK_MIME_TYPE_PRIMARY_TYPE = null;
 
 	@BeforeAll
 	static void beforeAll() throws ReflectiveOperationException {
@@ -193,7 +192,8 @@ class OcrGuiTest {
 		(METHOD_GET_DECLARED_METHOD = clz.getDeclaredMethod("getDeclaredMethod", Class.class, String.class,
 				Class[].class)).setAccessible(true);
 		//
-		(METHOD_GET_PRIMARY_TYPE = clz.getDeclaredMethod("getPrimaryType", MimeType.class)).setAccessible(true);
+		(METHOD_CHECK_MIME_TYPE_PRIMARY_TYPE = clz.getDeclaredMethod("checkMimeTypePrimaryType", String.class,
+				String.class)).setAccessible(true);
 		//
 	}
 
@@ -1368,21 +1368,24 @@ class OcrGuiTest {
 	}
 
 	@Test
-	void testGetPrimaryType() throws Throwable {
+	void testCheckMimeTypePrimaryType() throws Throwable {
 		//
-		Assertions.assertNull(getPrimaryType(null));
+		Assertions.assertTrue(checkMimeTypePrimaryType(null, null));
 		//
-		Assertions.assertNull(getPrimaryType(cast(MimeType.class, Narcissus.allocateInstance(MimeType.class))));
+		Assertions.assertTrue(checkMimeTypePrimaryType("", null));
+		//
+		Assertions.assertTrue(checkMimeTypePrimaryType("", null));
+		//
+		Assertions.assertTrue(checkMimeTypePrimaryType("image/a", null));
 		//
 	}
 
-	private static String getPrimaryType(final MimeType instance) throws Throwable {
+	private static boolean checkMimeTypePrimaryType(final String mimeType, final String mimeTypePrimaryType)
+			throws Throwable {
 		try {
-			final Object obj = METHOD_GET_PRIMARY_TYPE.invoke(null, instance);
-			if (obj == null) {
-				return null;
-			} else if (obj instanceof String) {
-				return (String) obj;
+			final Object obj = METHOD_CHECK_MIME_TYPE_PRIMARY_TYPE.invoke(null, mimeType, mimeTypePrimaryType);
+			if (obj instanceof Boolean) {
+				return ((Boolean) obj).booleanValue();
 			}
 			throw new Throwable(toString(getClass(obj)));
 		} catch (final InvocationTargetException e) {

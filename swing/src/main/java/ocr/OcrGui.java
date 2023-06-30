@@ -45,6 +45,7 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import javax.activation.MimeType;
+import javax.activation.MimeTypeParseException;
 import javax.swing.AbstractButton;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
@@ -542,13 +543,7 @@ public class OcrGui extends JFrame implements ActionListener {
 			//
 			if (contentTypes != null && contentTypes.size() == 1) {
 				//
-				final String primaryType = getPrimaryType(
-						testAndApply(StringUtils::isNotBlank, contentTypes.get(0), MimeType::new, null));
-				//
-				if (!StringUtils.equalsIgnoreCase(primaryType, "image") && JOptionPane.showConfirmDialog(null,
-						String.format("The \"Content-Type\" header return \"%1$s\".%2$sContinue?", primaryType,
-								System.lineSeparator()),
-						"Confirm", JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) {
+				if (!checkMimeTypePrimaryType(contentTypes.get(0), "image")) {
 					//
 					return;
 					//
@@ -567,6 +562,26 @@ public class OcrGui extends JFrame implements ActionListener {
 			//
 		} // try
 			//
+	}
+
+	private static boolean checkMimeTypePrimaryType(final String mimeType, final String mimeTypePrimaryType)
+			throws MimeTypeParseException {
+		//
+		final String primaryType = getPrimaryType(testAndApply(StringUtils::isNotBlank, mimeType, MimeType::new, null));
+		//
+		if (!StringUtils.equalsIgnoreCase(primaryType, mimeTypePrimaryType) && !GraphicsEnvironment.isHeadless()
+				&& !isUnderDebugOrMaven()) {
+			//
+			return JOptionPane
+					.showConfirmDialog(null,
+							String.format("The \"Content-Type\" header return \"%1$s\".%2$sContinue?", primaryType,
+									System.lineSeparator()),
+							"Confirm", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION;
+			//
+		} // if
+			//
+		return true;
+		//
 	}
 
 	private static String getPrimaryType(final MimeType instance) {
