@@ -1,3 +1,5 @@
+package ocr;
+
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.GraphicsEnvironment;
@@ -87,8 +89,6 @@ import org.oxbow.swingbits.dialog.task.TaskDialogs;
 
 import io.github.toolfactory.narcissus.Narcissus;
 import net.miginfocom.swing.MigLayout;
-import ocr.Ocr;
-import ocr.OcrImpl;
 
 public class OcrGui extends JFrame implements ActionListener {
 

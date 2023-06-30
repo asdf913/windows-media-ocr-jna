@@ -1,3 +1,5 @@
+package ocr;
+
 import java.awt.Container;
 import java.awt.GraphicsEnvironment;
 import java.awt.LayoutManager;
@@ -66,7 +68,6 @@ import javassist.util.proxy.MethodHandler;
 import javassist.util.proxy.ProxyFactory;
 import javassist.util.proxy.ProxyObject;
 import net.miginfocom.swing.MigLayout;
-import ocr.Ocr;
 
 class OcrGuiTest {
 
