@@ -479,8 +479,9 @@ public class OcrGui extends JFrame implements ActionListener {
 		//
 		final String languageTag = toString(getSelectedItem(cbmLanaguageTag));
 		//
-		final boolean isNotHeadLessAndisNotUnderDebugOrTest = Boolean.logicalAnd(!GraphicsEnvironment.isHeadless(),
-				!isUnderDebugOrMaven());
+		final boolean isHeadless = GraphicsEnvironment.isHeadless();
+		//
+		final boolean isNotHeadLessAndisNotUnderDebugOrTest = Boolean.logicalAnd(!isHeadless, !isUnderDebugOrMaven());
 		//
 		if (languageTag == null) {
 			//
@@ -510,6 +511,9 @@ public class OcrGui extends JFrame implements ActionListener {
 			//
 			if ((ci = testAndApply(OcrGui::exists, file, new ContentInfoUtil()::findMatch, null)) == null
 					|| !checkMimeTypePrimaryType(ci.getMimeType(), "image")) {
+				//
+				testAndAccept(Predicates.always(Boolean.logicalAnd(ci == null, !isHeadless), null),
+						"Mime Type could not be detected", x -> JOptionPane.showMessageDialog(null, x));
 				//
 				return;
 				//
