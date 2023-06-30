@@ -17,14 +17,17 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -76,7 +79,8 @@ class OcrGuiTest {
 			METHOD_GET_SYSTEM_CLIP_BOARD, METHOD_SET_CONTENTS, METHOD_IS_RAISE_THROWABLE_ONLY, METHOD_MAP,
 			METHOD_FOR_NAME, METHOD_GET_RESOURCE_AS_STREAM, METHOD_PARSE, METHOD_GET_METHOD,
 			METHOD_IS_UNDER_DEBUG_OR_MAVEN, METHOD_GET_AVAILABLE_RECOGNIZER_LANGUAGE_TAGS, METHOD_IS_ASSIGNABLE_FROM,
-			METHOD_FILTER_STACK_TRACE, METHOD_OPEN_CONNECTION, METHOD_GET_INPUT_STREAM, METHOD_FOR_EACH = null;
+			METHOD_FILTER_STACK_TRACE, METHOD_OPEN_CONNECTION, METHOD_GET_INPUT_STREAM, METHOD_GET_KEY,
+			METHOD_GET_VALUE, METHOD_ENTRY_SET, METHOD_SORTED, METHOD_FOR_EACH = null;
 
 	@BeforeAll
 	static void beforeAll() throws ReflectiveOperationException {
@@ -173,7 +177,15 @@ class OcrGuiTest {
 		//
 		(METHOD_GET_INPUT_STREAM = clz.getDeclaredMethod("getInputStream", URLConnection.class)).setAccessible(true);
 		//
-		(METHOD_FOR_EACH = clz.getDeclaredMethod("forEach", Map.class, BiConsumer.class)).setAccessible(true);
+		(METHOD_GET_KEY = clz.getDeclaredMethod("getKey", Entry.class)).setAccessible(true);
+		//
+		(METHOD_GET_VALUE = clz.getDeclaredMethod("getValue", Entry.class)).setAccessible(true);
+		//
+		(METHOD_ENTRY_SET = clz.getDeclaredMethod("entrySet", Map.class)).setAccessible(true);
+		//
+		(METHOD_SORTED = clz.getDeclaredMethod("sorted", Stream.class, Comparator.class)).setAccessible(true);
+		//
+		(METHOD_FOR_EACH = clz.getDeclaredMethod("forEach", Stream.class, Consumer.class)).setAccessible(true);
 		//
 	}
 
@@ -204,6 +216,14 @@ class OcrGuiTest {
 					//
 					return null;
 					//
+				} else if (Objects.equals(methodName, "forEach")) {
+					//
+					return null;
+					//
+				} else if (Objects.equals(methodName, "sorted")) {
+					//
+					return null;
+					//
 				} // if
 					//
 			} else if (proxy instanceof Logger) {
@@ -216,7 +236,19 @@ class OcrGuiTest {
 					//
 			} else if (proxy instanceof Map) {
 				//
-				if (Objects.equals(methodName, "forEach")) {
+				if (Objects.equals(methodName, "entrySet")) {
+					//
+					return null;
+					//
+				} // if
+					//
+			} else if (proxy instanceof Entry) {
+				//
+				if (Objects.equals(methodName, "getKey")) {
+					//
+					return null;
+					//
+				} else if (Objects.equals(methodName, "getValue")) {
 					//
 					return null;
 					//
@@ -258,6 +290,10 @@ class OcrGuiTest {
 
 	private IH ih = null;
 
+	private Entry<?, ?> entry = null;
+
+	private Stream<?> stream = null;
+
 	@BeforeEach
 	void beforeEach() throws Throwable {
 		//
@@ -279,7 +315,9 @@ class OcrGuiTest {
 			//
 		} // if
 			//
-		ih = new IH();
+		entry = Reflection.newProxy(Entry.class, ih = new IH());
+		//
+		stream = Reflection.newProxy(Stream.class, ih);
 		//
 	}
 
@@ -652,9 +690,7 @@ class OcrGuiTest {
 		//
 		Assertions.assertNull(filter(Stream.empty(), null));
 		//
-		final Stream<?> steram = Reflection.newProxy(Stream.class, ih);
-		//
-		Assertions.assertSame(steram, filter(steram, null));
+		Assertions.assertSame(stream, filter(stream, null));
 		//
 	}
 
@@ -952,7 +988,7 @@ class OcrGuiTest {
 		//
 		Assertions.assertNull(map(Stream.empty(), null));
 		//
-		Assertions.assertNull(map(Reflection.newProxy(Stream.class, ih), null));
+		Assertions.assertNull(map(stream, null));
 		//
 	}
 
@@ -1153,6 +1189,7 @@ class OcrGuiTest {
 	void testOpenConnection() throws Throwable {
 		//
 		Assertions.assertNotNull(openConnection(new File("pom.xml").toURI().toURL()));
+		//
 	}
 
 	private static URLConnection openConnection(final URL instance) throws Throwable {
@@ -1195,20 +1232,104 @@ class OcrGuiTest {
 	}
 
 	@Test
-	void testForEach() {
+	void testGetKey() throws Throwable {
 		//
-		Assertions.assertDoesNotThrow(() -> forEach(Reflection.newProxy(Map.class, ih), null));
+		Assertions.assertNull(getKey(null));
 		//
-		final Map<?, ?> map = Collections.emptyMap();
-		//
-		Assertions.assertDoesNotThrow(() -> forEach(map, null));
-		//
-		Assertions.assertDoesNotThrow(() -> forEach(map, Consumers.biNop()));
+		Assertions.assertNull(getKey(entry));
 		//
 	}
 
-	private static <K, V> void forEach(final Map<K, V> instance, final BiConsumer<? super K, ? super V> action)
+	private static <K> K getKey(final Entry<K, ?> instance) throws Throwable {
+		try {
+			return (K) METHOD_GET_KEY.invoke(null, instance);
+		} catch (final InvocationTargetException e) {
+			throw e.getTargetException();
+		}
+	}
+
+	@Test
+	void testGetValue() throws Throwable {
+		//
+		Assertions.assertNull(getValue(null));
+		//
+		Assertions.assertNull(getValue(entry));
+		//
+	}
+
+	private static <V> V getValue(final Entry<?, V> instance) throws Throwable {
+		try {
+			return (V) METHOD_GET_VALUE.invoke(null, instance);
+		} catch (final InvocationTargetException e) {
+			throw e.getTargetException();
+		}
+	}
+
+	@Test
+	void testEntrySet() throws Throwable {
+		//
+		Assertions.assertNull(entrySet(Reflection.newProxy(Map.class, ih)));
+		//
+	}
+
+	private static <K, V> Set<Entry<K, V>> entrySet(final Map<K, V> instance) throws Throwable {
+		try {
+			final Object obj = METHOD_ENTRY_SET.invoke(null, instance);
+			if (obj == null) {
+				return null;
+			} else if (obj instanceof Set) {
+				return (Set) obj;
+			}
+			throw new Throwable(toString(getClass(obj)));
+		} catch (final InvocationTargetException e) {
+			throw e.getTargetException();
+		}
+	}
+
+	@Test
+	void testSorted() {
+		//
+		Assertions.assertDoesNotThrow(() -> sorted(null, null));
+		//
+		Assertions.assertDoesNotThrow(() -> sorted(stream, null));
+		//
+		final Stream<?> stream = Stream.empty();
+		//
+		Assertions.assertDoesNotThrow(() -> sorted(stream, null));
+		//
+		Assertions.assertDoesNotThrow(() -> sorted(stream, (a, b) -> 0));
+		//
+	}
+
+	private static <T> Stream<T> sorted(final Stream<T> instance, final Comparator<? super T> comparator)
 			throws Throwable {
+		try {
+			final Object obj = METHOD_SORTED.invoke(null, instance, comparator);
+			if (obj == null) {
+				return null;
+			} else if (obj instanceof Stream) {
+				return (Stream) obj;
+			}
+			throw new Throwable(toString(getClass(obj)));
+		} catch (final InvocationTargetException e) {
+			throw e.getTargetException();
+		}
+	}
+
+	@Test
+	void testForEach() {
+		//
+		Assertions.assertDoesNotThrow(() -> forEach(stream, null));
+		//
+		final Stream<?> stream = Stream.empty();
+		//
+		Assertions.assertDoesNotThrow(() -> forEach(stream, null));
+		//
+		Assertions.assertDoesNotThrow(() -> forEach(stream, Consumers.nop()));
+		//
+	}
+
+	private static <T> void forEach(final Stream<T> instance, final Consumer<? super T> action) throws Throwable {
 		try {
 			METHOD_FOR_EACH.invoke(null, instance, action);
 		} catch (final InvocationTargetException e) {

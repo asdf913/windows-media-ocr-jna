@@ -26,14 +26,18 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.EventObject;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -527,7 +531,9 @@ public class OcrGui extends JFrame implements ActionListener {
 		//
 		try (final InputStream is = getInputStream(httpURLConnection)) {
 			//
-			forEach(getHeaderFields(httpURLConnection), (k, v) -> dtmResponseHeaders.addRow(new Object[] { k, v }));
+			forEach(sorted(stream(entrySet(getHeaderFields(httpURLConnection))),
+					(a, b) -> StringUtils.compare(getKey(a), getKey(b))),
+					en -> dtmResponseHeaders.addRow(new Object[] { getKey(en), getValue(en) }));
 			//
 			setText(jtcText, getOcrText(getOcr(), toString(getSelectedItem(cbmLanaguageTag)),
 					testAndApply(Objects::nonNull, is, IOUtils::toByteArray, null)));
@@ -542,9 +548,29 @@ public class OcrGui extends JFrame implements ActionListener {
 			//
 	}
 
-	private static <K, V> void forEach(final Map<K, V> instance, final BiConsumer<? super K, ? super V> action) {
+	private static <K> K getKey(final Entry<K, ?> instance) {
+		return instance != null ? instance.getKey() : null;
+	}
+
+	private static <V> V getValue(final Entry<?, V> instance) {
+		return instance != null ? instance.getValue() : null;
+	}
+
+	private static <K, V> Set<Entry<K, V>> entrySet(final Map<K, V> instance) {
+		return instance != null ? instance.entrySet() : null;
+	}
+
+	private static <T> Stream<T> sorted(final Stream<T> instance, final Comparator<? super T> comparator) {
 		//
-		if ((instance != null && action != null) || Proxy.isProxyClass(getClass(instance))) {
+		return instance != null && (comparator != null || Proxy.isProxyClass(getClass(instance)))
+				? instance.sorted(comparator)
+				: null;
+		//
+	}
+
+	private static <T> void forEach(final Stream<T> instance, final Consumer<? super T> action) {
+		//
+		if (instance != null && (action != null || Proxy.isProxyClass(getClass(instance)))) {
 			//
 			instance.forEach(action);
 			//
