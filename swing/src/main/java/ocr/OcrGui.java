@@ -541,14 +541,11 @@ public class OcrGui extends JFrame implements ActionListener {
 			final List<String> contentTypes = testAndApply(x -> containsKey(headerFields, x), "Content-Type",
 					x -> get(headerFields, x), null);
 			//
-			if (contentTypes != null && contentTypes.size() == 1) {
+			if (contentTypes != null && contentTypes.size() == 1
+					&& !checkMimeTypePrimaryType(contentTypes.get(0), "image")) {
 				//
-				if (!checkMimeTypePrimaryType(contentTypes.get(0), "image")) {
-					//
-					return;
-					//
-				} // if
-					//
+				return;
+				//
 			} // if
 				//
 			setText(jtcText, getOcrText(getOcr(), toString(getSelectedItem(cbmLanaguageTag)),
