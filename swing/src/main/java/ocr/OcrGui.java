@@ -512,7 +512,7 @@ public class OcrGui extends JFrame implements ActionListener {
 			if ((ci = testAndApply(OcrGui::exists, file, new ContentInfoUtil()::findMatch, null)) == null
 					|| !checkMimeTypePrimaryType(ci.getMimeType(), "image")) {
 				//
-				testAndAccept(Predicates.always(Boolean.logicalAnd(ci == null, !isHeadless), null),
+				testAndAccept(Predicates.always(and(ci == null, !isHeadless, !isUnderDebugOrMaven()), null),
 						"Mime Type could not be detected", x -> JOptionPane.showMessageDialog(null, x));
 				//
 				return;
