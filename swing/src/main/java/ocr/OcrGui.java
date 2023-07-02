@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.EventObject;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -125,7 +126,7 @@ public class OcrGui extends JFrame implements ActionListener {
 	@Note("URL")
 	private AbstractButton abUrl = null;
 
-	private AbstractButton abCopyText = null;
+	private AbstractButton abCopyText, abCopyHttpResponseHeaderFields = null;
 
 	private JLabel jlLanguageTag = null;
 
@@ -249,7 +250,9 @@ public class OcrGui extends JFrame implements ActionListener {
 			//
 		} // if
 			//
-		addActionListener(this, abFile, abUrl, abCopyText);
+		testAndAccept(predicate, abCopyHttpResponseHeaderFields = new JButton("Copy"), this::add);
+		//
+		addActionListener(this, abFile, abUrl, abCopyText, abCopyHttpResponseHeaderFields);
 		//
 	}
 
@@ -460,9 +463,34 @@ public class OcrGui extends JFrame implements ActionListener {
 			//
 			actionPerformeJcbLanaguageTag();
 			//
-		} // if
+		} else if (Objects.equals(source, this.abCopyHttpResponseHeaderFields)) {
 			//
+			Map<Object, Object> map = null;
+			//
+			Object key = null;
+			//
+			for (int i = 0; dtmResponseHeaders != null && i < dtmResponseHeaders.getRowCount(); i++) {
+				//
+				if (dtmResponseHeaders.getColumnCount() < 2 || (key = dtmResponseHeaders.getValueAt(i, 0)) == null) {
+					//
+					continue;
+					//
+				} // if
+					//
+				put(map = ObjectUtils.getIfNull(map, LinkedHashMap::new), key, dtmResponseHeaders.getValueAt(i, 1));
+				//
+			} // for
+				//
+			setContentsToSystemClipboard(toString(map));
+			//
+		} // try
+			//
+	}
 
+	private static <K, V> void put(final Map<K, V> instance, final K key, final V value) {
+		if (instance != null) {
+			instance.put(key, value);
+		}
 	}
 
 	private static boolean isUnderDebugOrMaven() {
@@ -726,6 +754,12 @@ public class OcrGui extends JFrame implements ActionListener {
 
 	private void actionPerformedAbCopyText() {
 		//
+		setContentsToSystemClipboard(getText(jtcText));
+		//
+	}
+
+	private static void setContentsToSystemClipboard(final String string) {
+		//
 		final Toolkit toolkit = Toolkit.getDefaultToolkit();
 		//
 		final Class<?> clz = getClass(toolkit);
@@ -746,10 +780,11 @@ public class OcrGui extends JFrame implements ActionListener {
 			//
 		if (!isUnderDebugOrMaven()) {
 			//
-			setContents(getSystemClipboard(toolkit), new StringSelection(getText(jtcText)), null);
+			setContents(getSystemClipboard(toolkit), new StringSelection(string), null);
 			//
 		} // if
 			//
+
 	}
 
 	private static Method getDeclaredMethod(final Class<?> instance, final String name,
