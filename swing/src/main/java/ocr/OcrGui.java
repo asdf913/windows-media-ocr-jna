@@ -126,7 +126,11 @@ public class OcrGui extends JFrame implements ActionListener {
 	@Note("URL")
 	private AbstractButton abUrl = null;
 
-	private AbstractButton abCopyText, abCopyHttpResponseHeaderFields = null;
+	@Note("Copy Text")
+	private AbstractButton abCopyText = null;
+
+	@Note("Copy HTTP Response Headers")
+	private AbstractButton abCopyHttpResponseHeaderFields = null;
 
 	private JLabel jlLanguageTag = null;
 
